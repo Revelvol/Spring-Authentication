@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    container_name: jwt-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminPS
+      POSTGRES_DB: userServiceDB
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5342:5342"
+
+volumes:
+  db_data:
