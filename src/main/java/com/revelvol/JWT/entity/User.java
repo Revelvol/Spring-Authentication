@@ -1,17 +1,24 @@
 package com.revelvol.JWT.entity;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "_user")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(unique = true)
     private String email;
     private String password;
     @ManyToMany
@@ -47,8 +54,49 @@ public class User {
         this.email = email;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        //map the authorities from the user roles set
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        for (Role role : userRoles) {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        }
+        return authorities;
+    }
+
+
     public String getPassword() {
         return password;
+    }
+    // OVERIDE THIS
+    @Override
+    public String getUsername() {
+        //get email as the unique username
+        return getEmail();
+    }
+
+    // OVERIDE THIS
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    // OVERIDE THIS
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    // OVERIDE THIS
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    // OVERIDE THIS
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
     public void setPassword(String password) {
@@ -72,4 +120,6 @@ public class User {
                 ", userRoles=" + userRoles +
                 '}';
     }
+
+
 }
