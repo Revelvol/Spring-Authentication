@@ -15,7 +15,8 @@ public class JwtService {
     // use heex as best practice and easier implementation
     private static final String SECRET_KEY = "743777217A25432A462D4A614E645266556A586E3272357538782F413F442847";
     public String extractUsername(String jwt) {
-        return "helo";
+        return extractClaims(jwt , Claims::getSubject);
+        //look at that :: getsubject, jadi ini shorthand methjod to overiide apply di claiim resoilver diabawah
     }
 
     // extract single claims every pass
