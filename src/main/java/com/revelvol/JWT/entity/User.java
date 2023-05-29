@@ -68,7 +68,7 @@ public class User implements UserDetails {
     public String getPassword() {
         return password;
     }
-    // OVERIDE THIS
+    // OVERRIDE THIS
     @Override
     public String getUsername() {
         //get email as the unique username
