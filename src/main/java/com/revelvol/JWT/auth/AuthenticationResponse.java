@@ -1,7 +1,9 @@
 package com.revelvol.JWT.auth;
 
 
+
 public class AuthenticationResponse {
+    //add builder and data here
 
     private String token;
 
@@ -22,4 +24,8 @@ public class AuthenticationResponse {
     public void setToken(String token) {
         this.token = token;
     }
+
+
+
+
 }

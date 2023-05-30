@@ -1,11 +1,17 @@
 package com.revelvol.JWT.auth;
 
+import com.revelvol.JWT.entity.Role;
+import com.revelvol.JWT.entity.User;
+import com.revelvol.JWT.repository.RoleRepository;
 import com.revelvol.JWT.repository.UserRepository;
 import com.revelvol.JWT.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class AuthenticationService {
@@ -14,25 +20,32 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    private final RoleRepository roleRepository;
+
     @Autowired
-    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService
+        this.jwtService = jwtService;
+        this.roleRepository = roleRepository;
     }
 
 
     public AuthenticationResponse register(RegisterRequest request) {
-        var user = User.builder()
-                .username(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword())) // encode the password before saving to database
-                //.role(Role.USER), might want to add custom role here and add role detail
-                .build();
+        Set<Role> roles = new HashSet<>(); //might want to initiate role her
+        Role role = roleRepository.getOrCreateByName("USER");
+        roles.add(role);
+        User user = new User(request.getEmail(), passwordEncoder.encode(request.getPassword()), roles);
 
-        userRepository.save(user);
+        user = userRepository.save(user);
 
-        var jwtToken =jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
+        // add the connection for user and role
+        // todo carefull here since we load all users upon ading connection so it might bebetter to justadd connection to the intermediary table
+        role.getUsers().add(user);
+        roleRepository.save(role);
+        var jwtToken = jwtService.generateToken(user);
+
+        AuthenticationResponse authResponse = new AuthenticationResponse(jwtToken);
 
         return null;
     }

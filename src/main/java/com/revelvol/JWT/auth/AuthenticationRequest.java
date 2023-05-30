@@ -1,5 +1,6 @@
 package com.revelvol.JWT.auth;
 
+
 public class AuthenticationRequest {
     private String email;
     private String password;
