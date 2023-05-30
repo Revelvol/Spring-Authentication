@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .disable()
                 // endpoint whitelist that do not need authentication
                 .authorizeHttpRequests()
-                .requestMatchers("") //all the list requestin here will permit all
+                .requestMatchers("/api/v1/auth/**") //all the list requestin here will permit all
                 .permitAll()
                 .anyRequest()// any other request need to be authenticated
                 .authenticated()
