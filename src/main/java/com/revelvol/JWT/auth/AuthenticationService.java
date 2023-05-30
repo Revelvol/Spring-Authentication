@@ -7,6 +7,8 @@ import com.revelvol.JWT.repository.UserRepository;
 import com.revelvol.JWT.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,36 +23,51 @@ public class AuthenticationService {
     private final JwtService jwtService;
 
     private final RoleRepository roleRepository;
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
-    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, RoleRepository roleRepository) {
+    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, RoleRepository roleRepository, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.roleRepository = roleRepository;
+        this.authenticationManager = authenticationManager;
     }
 
 
     public AuthenticationResponse register(RegisterRequest request) {
-        Set<Role> roles = new HashSet<>(); //might want to initiate role her
+        Set<Role> roles = new HashSet<>();
+
+
         Role role = roleRepository.getOrCreateByName("USER");
+
         roles.add(role);
         User user = new User(request.getEmail(), passwordEncoder.encode(request.getPassword()), roles);
 
         user = userRepository.save(user);
 
-        // add the connection for user and role
-        // todo carefull here since we load all users upon ading connection so it might bebetter to justadd connection to the intermediary table
-        role.getUsers().add(user);
-        roleRepository.save(role);
+        // the connection are added automatically for many to many
         var jwtToken = jwtService.generateToken(user);
 
         AuthenticationResponse authResponse = new AuthenticationResponse(jwtToken);
 
-        return null;
+        return authResponse;
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        return null;
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(); // todo implement exception handling here
+
+        var jwtToken = jwtService.generateToken(user);
+
+        AuthenticationResponse authResponse = new AuthenticationResponse(jwtToken);
+
+        return authResponse;
     }
 }
