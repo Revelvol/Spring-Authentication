@@ -42,6 +42,7 @@ public class AuthenticationService {
         Role role = roleRepository.getOrCreateByName("USER");
 
         roles.add(role);
+
         User user = new User(request.getEmail(), passwordEncoder.encode(request.getPassword()), roles);
 
         user = userRepository.save(user);

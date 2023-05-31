@@ -1,5 +1,7 @@
 package com.revelvol.JWT.config;
 
+import com.revelvol.JWT.entity.User;
+import com.revelvol.JWT.repository.UserRepository;
 import com.revelvol.JWT.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -23,10 +26,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
+    private final UserRepository userRepository;
+
     @Autowired
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
 
     }
 
@@ -42,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String userEmail;
         // do a check if there is auth header  or not start with bearer
         if (authHeader == null || !authHeader.startsWith("Bearer")) {
-            // pass to another filter (yang hanle return )
+        // pass to another filter (yang hanle return )
             filterChain.doFilter(request,response);
             return;
         }
@@ -52,7 +58,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // if user is not null and it is not authenticated, just pass this filter
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // get user from the database, and see whether it is valid or not
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            // todo fix bug here dimana servlet role is bad
+
+            Optional<User> userDetails = userRepository.findByEmail(userEmail);
+
+
+
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 //create token
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
