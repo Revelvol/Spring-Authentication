@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: adminPS
       POSTGRES_DB: userServiceDB
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/datayour
     ports:
       - "5342:5432"
 

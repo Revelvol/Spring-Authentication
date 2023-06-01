@@ -56,7 +56,6 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String jwt) {
-        // todo fix bug here and loading get authorities in user
         return extractExpiration(jwt).after(new Date(System.currentTimeMillis()));
     }
 

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -63,12 +64,16 @@ public class AuthenticationService {
                 )
         );
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(); // todo implement exception handling here
+                .orElseThrow(()-> new RuntimeException("User does not exist")); // todo implement exception handling here
 
         var jwtToken = jwtService.generateToken(user);
 
         AuthenticationResponse authResponse = new AuthenticationResponse(jwtToken);
 
         return authResponse;
+
     }
+
+
+
 }

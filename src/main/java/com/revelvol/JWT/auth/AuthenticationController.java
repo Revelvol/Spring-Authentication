@@ -3,6 +3,8 @@ package com.revelvol.JWT.auth;
 //rest api to allow creation and delete of user that need to be authenticated
 
 
+import com.revelvol.JWT.entity.User;
+import com.revelvol.JWT.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,16 +17,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public AuthenticationController(AuthenticationService authenticationService) {
+    public AuthenticationController(AuthenticationService authenticationService, UserRepository userRepository) {
         this.authenticationService = authenticationService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
             @RequestBody RegisterRequest request
     ) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user != null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         return ResponseEntity.ok(authenticationService.register(request));
     }
 
