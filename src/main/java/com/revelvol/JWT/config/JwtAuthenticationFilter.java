@@ -58,9 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // if user is not null and it is not authenticated, just pass this filter
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // get user from the database, and see whether it is valid or not
-            // todo fix bug here dimana servlet role is bad
-
-            Optional<User> userDetails = userRepository.findByEmail(userEmail);
+            User userDetails = (User) userDetailsService.loadUserByUsername(userEmail);
 
 
 
@@ -70,6 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails,
                         null,
                         userDetails.getAuthorities()
+                        //userDetails.getAuthorities()
                 );
                 // enforce details with the request
                 authToken.setDetails(

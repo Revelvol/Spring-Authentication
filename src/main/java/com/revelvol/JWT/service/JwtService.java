@@ -1,5 +1,6 @@
 package com.revelvol.JWT.service;
 
+import com.revelvol.JWT.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -48,14 +49,15 @@ public class JwtService {
     }
 
     // method to validate token
-    public boolean isTokenValid(String jwt, UserDetails userDetails) {
+    public boolean isTokenValid(String jwt, User userDetails) {
         final String username = extractUsername(jwt);
-        return (username.equals(userDetails.getUsername()) && isTokenExpired(jwt));
+        return (username.equals(userDetails.getEmail()) && isTokenExpired(jwt));
 
     }
 
     private boolean isTokenExpired(String jwt) {
-        return extractExpiration(jwt).before(new Date());
+        // todo fix bug here and loading get authorities in user
+        return extractExpiration(jwt).after(new Date(System.currentTimeMillis()));
     }
 
     private Date extractExpiration(String jwt) {
@@ -72,6 +74,7 @@ public class JwtService {
     }
     // extract all claims from the token
     private Claims extractAllClaims(String token) {
+
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignInKey())

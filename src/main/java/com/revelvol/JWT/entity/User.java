@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
 
+
 @Entity
 @Table(name = "_user")
 public class User implements UserDetails {
@@ -22,7 +23,7 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
     private String password;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -118,7 +119,7 @@ public class User implements UserDetails {
                 "id=" + id +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", userRoles=" + userRoles +
+                ", userRoles=" +
                 '}';
     }
 
