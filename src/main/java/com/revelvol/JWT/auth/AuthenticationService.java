@@ -4,12 +4,15 @@ import com.revelvol.JWT.entity.Role;
 import com.revelvol.JWT.entity.User;
 import com.revelvol.JWT.repository.RoleRepository;
 import com.revelvol.JWT.repository.UserRepository;
+import com.revelvol.JWT.request.AuthenticationRequest;
+import com.revelvol.JWT.request.RegisterRequest;
+import com.revelvol.JWT.response.ApiResponse;
+import com.revelvol.JWT.response.AuthenticationResponse;
 import com.revelvol.JWT.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +39,7 @@ public class AuthenticationService {
     }
 
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public ApiResponse register(RegisterRequest request) {
         Set<Role> roles = new HashSet<>();
 
 
@@ -51,12 +54,12 @@ public class AuthenticationService {
         // the connection are added automatically for many to many
         var jwtToken = jwtService.generateToken(user);
 
-        AuthenticationResponse authResponse = new AuthenticationResponse(jwtToken);
+        AuthenticationResponse authResponse = new AuthenticationResponse(200,"registration success",jwtToken);
 
         return authResponse;
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public ApiResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -68,7 +71,7 @@ public class AuthenticationService {
 
         var jwtToken = jwtService.generateToken(user);
 
-        AuthenticationResponse authResponse = new AuthenticationResponse(jwtToken);
+        AuthenticationResponse authResponse = new  AuthenticationResponse(200,"authentication success",jwtToken);
 
         return authResponse;
 

@@ -5,6 +5,10 @@ package com.revelvol.JWT.auth;
 
 import com.revelvol.JWT.entity.User;
 import com.revelvol.JWT.repository.UserRepository;
+import com.revelvol.JWT.request.AuthenticationRequest;
+import com.revelvol.JWT.request.RegisterRequest;
+import com.revelvol.JWT.response.ApiResponse;
+import com.revelvol.JWT.response.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,7 +30,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<ApiResponse> register(
             @RequestBody RegisterRequest request
     ) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
@@ -38,7 +42,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<ApiResponse> register(
             @RequestBody AuthenticationRequest request
     ) {
         return ResponseEntity.ok(authenticationService.authenticate(request));

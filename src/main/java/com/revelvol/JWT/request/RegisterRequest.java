@@ -1,14 +1,14 @@
-package com.revelvol.JWT.auth;
+package com.revelvol.JWT.request;
 
+public class RegisterRequest {
 
-public class AuthenticationRequest {
     private String email;
     private String password;
 
-    public AuthenticationRequest() {
+    public RegisterRequest() {
     }
 
-    public AuthenticationRequest(String email, String password) {
+    public RegisterRequest(String email, String password) {
         this.email = email;
         this.password = password;
     }
