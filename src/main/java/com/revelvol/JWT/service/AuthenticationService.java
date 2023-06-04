@@ -1,5 +1,7 @@
 package com.revelvol.JWT.service;
 
+import com.revelvol.JWT.exception.UserAlreadyExistsException;
+import com.revelvol.JWT.exception.UserNotFoundException;
 import com.revelvol.JWT.model.Role;
 import com.revelvol.JWT.model.User;
 import com.revelvol.JWT.repository.RoleRepository;
@@ -11,6 +13,7 @@ import com.revelvol.JWT.response.AuthenticationResponse;
 import com.revelvol.JWT.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,36 +50,44 @@ public class AuthenticationService {
 
         roles.add(role);
 
-        User user = new User(request.getEmail(), passwordEncoder.encode(request.getPassword()), roles);
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        // perform logic to see if the user already exist
+        if (user != null){
+            throw new UserAlreadyExistsException("User  already exist ");
+        } else {
+            user = new User(request.getEmail(), passwordEncoder.encode(request.getPassword()), roles);
 
-        user = userRepository.save(user);
+            user = userRepository.save(user);
 
-        // the connection are added automatically for many to many
-        var jwtToken = jwtService.generateToken(user);
+            // the connection are added automatically for many to many
+            var jwtToken = jwtService.generateToken(user);
 
-        AuthenticationResponse authResponse = new AuthenticationResponse(200,"registration success",jwtToken);
+            AuthenticationResponse authResponse = new AuthenticationResponse(HttpStatus.OK.value(),
+                    "registration success",
+                    jwtToken);
+            return authResponse;
+        }
 
-        return authResponse;
     }
 
     public ApiResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(()-> new RuntimeException("User does not exist")); // todo implement exception handling here
+
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UserNotFoundException(
+                "User does not exist"));
+
+        // todo wrap this in passwrod check first
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),
+                request.getPassword()));
 
         var jwtToken = jwtService.generateToken(user);
 
-        AuthenticationResponse authResponse = new  AuthenticationResponse(200,"authentication success",jwtToken);
+        AuthenticationResponse authResponse = new AuthenticationResponse(HttpStatus.OK.value(),
+                "authentication success",
+                jwtToken);
 
         return authResponse;
 
     }
-
 
 
 }

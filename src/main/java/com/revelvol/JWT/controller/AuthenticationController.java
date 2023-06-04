@@ -3,6 +3,8 @@ package com.revelvol.JWT.controller;
 //rest api to allow creation and delete of user that need to be authenticated
 
 
+import com.revelvol.JWT.exception.UserAlreadyExistsException;
+import com.revelvol.JWT.exception.UserNotFoundException;
 import com.revelvol.JWT.model.User;
 import com.revelvol.JWT.repository.UserRepository;
 import com.revelvol.JWT.request.AuthenticationRequest;
@@ -10,6 +12,7 @@ import com.revelvol.JWT.request.RegisterRequest;
 import com.revelvol.JWT.response.ApiResponse;
 import com.revelvol.JWT.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,30 +24,47 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final UserRepository userRepository;
+
 
     @Autowired
-    public AuthenticationController(AuthenticationService authenticationService, UserRepository userRepository) {
+    public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
-        this.userRepository = userRepository;
+
     }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(
             @RequestBody RegisterRequest request
     ) {
-        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-        if (user != null) {
-            return ResponseEntity.badRequest().build();
+        ApiResponse response;
+        try {
+            response = authenticationService.register(request);
+            return ResponseEntity.ok(response);
+
+        } catch (UserAlreadyExistsException e) {
+
+            response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+
+
         }
 
-        return ResponseEntity.ok(authenticationService.register(request));
+
     }
 
     @PostMapping("/authenticate")
     public ResponseEntity<ApiResponse> register(
             @RequestBody AuthenticationRequest request
     ) {
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+        ApiResponse response;
+
+        try {
+            response = authenticationService.authenticate(request);
+            return ResponseEntity.ok(response);
+        } catch (UserNotFoundException e) {
+            response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+
     }
 }
