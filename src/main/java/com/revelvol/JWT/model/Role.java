@@ -1,4 +1,4 @@
-package com.revelvol.JWT.entity;
+package com.revelvol.JWT.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

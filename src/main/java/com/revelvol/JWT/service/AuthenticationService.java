@@ -1,7 +1,7 @@
-package com.revelvol.JWT.auth;
+package com.revelvol.JWT.service;
 
-import com.revelvol.JWT.entity.Role;
-import com.revelvol.JWT.entity.User;
+import com.revelvol.JWT.model.Role;
+import com.revelvol.JWT.model.User;
 import com.revelvol.JWT.repository.RoleRepository;
 import com.revelvol.JWT.repository.UserRepository;
 import com.revelvol.JWT.request.AuthenticationRequest;

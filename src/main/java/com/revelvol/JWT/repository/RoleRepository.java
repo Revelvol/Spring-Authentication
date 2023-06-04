@@ -1,7 +1,7 @@
 package com.revelvol.JWT.repository;
 
-import com.revelvol.JWT.entity.Role;
-import com.revelvol.JWT.entity.User;
+import com.revelvol.JWT.model.Role;
+import com.revelvol.JWT.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

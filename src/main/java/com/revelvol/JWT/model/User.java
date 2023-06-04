@@ -1,4 +1,4 @@
-package com.revelvol.JWT.entity;
+package com.revelvol.JWT.model;
 
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;

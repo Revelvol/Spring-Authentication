@@ -1,6 +1,6 @@
 package com.revelvol.JWT.service;
 
-import com.revelvol.JWT.entity.User;
+import com.revelvol.JWT.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

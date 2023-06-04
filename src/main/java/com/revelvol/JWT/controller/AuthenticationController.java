@@ -1,14 +1,14 @@
-package com.revelvol.JWT.auth;
+package com.revelvol.JWT.controller;
 
 //rest api to allow creation and delete of user that need to be authenticated
 
 
-import com.revelvol.JWT.entity.User;
+import com.revelvol.JWT.model.User;
 import com.revelvol.JWT.repository.UserRepository;
 import com.revelvol.JWT.request.AuthenticationRequest;
 import com.revelvol.JWT.request.RegisterRequest;
 import com.revelvol.JWT.response.ApiResponse;
-import com.revelvol.JWT.response.AuthenticationResponse;
+import com.revelvol.JWT.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
