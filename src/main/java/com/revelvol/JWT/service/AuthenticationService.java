@@ -1,5 +1,6 @@
 package com.revelvol.JWT.service;
 
+import com.revelvol.JWT.exception.InvalidPasswordException;
 import com.revelvol.JWT.exception.UserAlreadyExistsException;
 import com.revelvol.JWT.exception.UserNotFoundException;
 import com.revelvol.JWT.model.Role;
@@ -74,6 +75,10 @@ public class AuthenticationService {
 
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UserNotFoundException(
                 "User does not exist"));
+
+        if (!passwordEncoder.matches(request.getPassword(),  user.getPassword())){
+            throw new InvalidPasswordException("Invalid Password");
+        }
 
         // todo wrap this in passwrod check first
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),

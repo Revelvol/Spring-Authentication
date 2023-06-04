@@ -3,6 +3,7 @@ package com.revelvol.JWT.controller;
 //rest api to allow creation and delete of user that need to be authenticated
 
 
+import com.revelvol.JWT.exception.InvalidPasswordException;
 import com.revelvol.JWT.exception.UserAlreadyExistsException;
 import com.revelvol.JWT.exception.UserNotFoundException;
 import com.revelvol.JWT.model.User;
@@ -61,7 +62,7 @@ public class AuthenticationController {
         try {
             response = authenticationService.authenticate(request);
             return ResponseEntity.ok(response);
-        } catch (UserNotFoundException e) {
+        } catch (UserNotFoundException |InvalidPasswordException  e) {
             response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }

@@ -6,12 +6,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/demo-controller")
-public class DemoController {
+@RequestMapping("/")
+public class HealthController {
+
     @GetMapping
-    public ResponseEntity<String> sayHello(){
-        return ResponseEntity.ok("this is a secured endpoint");
+    public ResponseEntity<String> healthCheck(){
+        return ResponseEntity.ok("ok");
     }
-
-
 }
