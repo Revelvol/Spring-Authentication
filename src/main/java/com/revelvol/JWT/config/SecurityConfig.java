@@ -12,6 +12,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 // we want to add/ implement the jwt authentication filter to the normal java security filter chain
+// todo : Add error 404 return  when  uri is not found 
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
