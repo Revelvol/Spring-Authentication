@@ -31,6 +31,13 @@ public class User implements UserDetails {
     )
     private Set<Role> userRoles = new HashSet<>();
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private UserInformation userInformation;
+
+
+    //getter and setter
+
     public User() {
     }
 

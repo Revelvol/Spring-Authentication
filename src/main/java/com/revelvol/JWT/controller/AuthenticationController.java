@@ -68,4 +68,6 @@ public class AuthenticationController {
         }
 
     }
+
+    // here we want a get mapping that have the jsot token in the http header, it will return the user information
 }
