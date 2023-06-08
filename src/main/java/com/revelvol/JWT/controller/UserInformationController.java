@@ -46,11 +46,10 @@ public class UserInformationController {
             @RequestBody UserInformationRequest request,
             @RequestHeader HttpHeaders headers
             ){
-        System.out.println(request.toString());
+
         ApiResponse response;
         // todo implement error controler advice for more global error handling
         String token = headers.getFirst("Authorization").substring(7);
-        //todo implement add user information mechanism in the userInformation repository
 
         try {
             response = userInformationService.addUserInformation(request,token);
@@ -61,6 +60,41 @@ public class UserInformationController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @PutMapping(consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ApiResponse> putUserInformation(
+            @RequestBody UserInformationRequest request,
+            @RequestHeader HttpHeaders headers
+    ) {
+        ApiResponse response;
+        String token = headers.getFirst("Authorization").substring(7);
+
+        try {
+            response = userInformationService.updateUserInformation(request, token); // Replace with your update logic
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PatchMapping(consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ApiResponse> patchUserInformation(
+            @RequestBody UserInformationRequest request,
+            @RequestHeader HttpHeaders headers
+    ) {
+        ApiResponse response;
+        String token = headers.getFirst("Authorization").substring(7);
+
+        try {
+            response = userInformationService.patchUserInformation(request, token); // Replace with your patch logic
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
 
 
 }
