@@ -47,6 +47,13 @@ public class User implements UserDetails {
         this.userRoles = userRoles;
     }
 
+    public User(String email, String password, Set<Role> userRoles, UserInformation userInformation) {
+        this.email = email;
+        this.password = password;
+        this.userRoles = userRoles;
+        this.userInformation = userInformation;
+    }
+
     public int getId() {
         return id;
     }
@@ -125,13 +132,16 @@ public class User implements UserDetails {
         return "User{" +
                 "id=" + id +
                 ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", userRoles=" +
+                ", password='" + password + '\''+
                 '}';
     }
 
 
+    public UserInformation getUserInformation() {
+        return userInformation;
+    }
 
-
-
+    public void setUserInformation(UserInformation userInformation) {
+        this.userInformation = userInformation;
+    }
 }
