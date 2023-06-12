@@ -43,12 +43,17 @@ public class UserInformationController {
 
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<ApiResponse> postUserInformation(
-            @RequestBody UserInformationRequest request,
+            @RequestBody(required = false) UserInformationRequest request,
             @RequestHeader HttpHeaders headers
             ){
 
         ApiResponse response;
-        // todo implement error controler advice for more global error handling
+        if (request == null /* check for missing required fields */) {
+            response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "Request body is required.");
+            return ResponseEntity.badRequest().body(response);
+        }
+        // todo implement error controller advice for more global error handling
+
         String token = headers.getFirst("Authorization").substring(7);
 
         try {
