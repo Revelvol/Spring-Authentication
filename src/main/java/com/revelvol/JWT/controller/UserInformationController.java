@@ -15,13 +15,24 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/user")
 public class UserInformationController {
-
+    // todo implement validation logic for cases where, the request body is weird or etc
     private UserInformationService userInformationService;
 
     @Autowired
     public UserInformationController(UserInformationService userInformationService) {
         this.userInformationService = userInformationService;
     }
+
+    private static ResponseEntity<ApiResponse> validateRequest(UserInformationRequest request) {
+        ApiResponse response;
+        // Case: Request Body is Empty
+        if (request == null) {
+            response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "Request body is required.");
+            return ResponseEntity.badRequest().body(response);
+        }
+        return null;
+    }
+
 
     @GetMapping
     public ResponseEntity<ApiResponse> getUserInformation(
@@ -48,11 +59,10 @@ public class UserInformationController {
             ){
 
         ApiResponse response;
-        if (request == null /* check for missing required fields */) {
-            response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "Request body is required.");
-            return ResponseEntity.badRequest().body(response);
-        }
-        // todo implement error controller advice for more global error handling
+        ResponseEntity<ApiResponse> response1 = validateRequest(
+                request);
+        if (response1 != null) return response1;
+
 
         String token = headers.getFirst("Authorization").substring(7);
 
@@ -66,12 +76,19 @@ public class UserInformationController {
         }
     }
 
+
+
     @PutMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<ApiResponse> putUserInformation(
-            @RequestBody UserInformationRequest request,
+            @RequestBody(required = false) UserInformationRequest request,
             @RequestHeader HttpHeaders headers
     ) {
         ApiResponse response;
+
+        ResponseEntity<ApiResponse> response1 = validateRequest(
+                request);
+        if (response1 != null) return response1;
+
         String token = headers.getFirst("Authorization").substring(7);
 
         try {
@@ -89,6 +106,9 @@ public class UserInformationController {
             @RequestHeader HttpHeaders headers
     ) {
         ApiResponse response;
+        ResponseEntity<ApiResponse> response1 = validateRequest(
+                request);
+        if (response1 != null) return response1;
         String token = headers.getFirst("Authorization").substring(7);
 
         try {
