@@ -6,11 +6,17 @@ import com.revelvol.JWT.model.UserInformation;
 import com.revelvol.JWT.request.UserInformationRequest;
 import com.revelvol.JWT.response.ApiResponse;
 import com.revelvol.JWT.service.UserInformationService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -35,26 +41,18 @@ public class UserInformationController {
 
 
     @GetMapping
-    public ResponseEntity<ApiResponse> getUserInformation(
-            @RequestHeader HttpHeaders headers) {
-
+    public ResponseEntity<ApiResponse> getUserInformation(@RequestHeader HttpHeaders headers) {
         String authHeader = headers.getFirst("Authorization");
         String token = authHeader.substring(7);
 
-        try {
-            ApiResponse userInformation = userInformationService.getUserInformation(token);
-
-            return ResponseEntity.ok(userInformation);
-        } catch (UserNotFoundException e) {
-
-            ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+        ApiResponse userInformation = userInformationService.getUserInformation(token);
+        return ResponseEntity.ok(userInformation);
     }
+
 
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<ApiResponse> postUserInformation(
-            @RequestBody(required = false) UserInformationRequest request,
+            @Valid @RequestBody(required = false) UserInformationRequest request,
             @RequestHeader HttpHeaders headers
             ){
 
@@ -119,6 +117,19 @@ public class UserInformationController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return errors;
+    }
+
 
 
 

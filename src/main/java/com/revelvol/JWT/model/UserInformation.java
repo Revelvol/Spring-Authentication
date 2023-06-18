@@ -1,6 +1,9 @@
 package com.revelvol.JWT.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
+import org.springframework.lang.NonNull;
 
 import javax.xml.crypto.Data;
 import java.util.Date;
@@ -17,12 +20,19 @@ public class UserInformation {
     @MapsId
     @JoinColumn(name = "user_id")
     private User user;
+
+    @NotBlank(message = "fullName cannot be empty")
     private String fullName;
+
+    @Past(message = "Date cannot be pass current date")
     private Date dateOfBirth;
+
     private String phoneNumber;
+
     private String gender;
 
     private String language;
+
     //todo add address here one to one connection
 
 
