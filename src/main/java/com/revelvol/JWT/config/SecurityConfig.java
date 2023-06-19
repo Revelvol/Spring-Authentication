@@ -19,9 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
 
-    @Autowired
-    @Qualifier("delegatedAuthenticationEntryPoint")
-    AuthenticationEntryPoint authenticationEntryPoint;
+
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
     private final NotFoundFilter notFoundFilter;
@@ -31,6 +29,10 @@ public class SecurityConfig {
         this.authenticationProvider = authenticationProvider;
         this.notFoundFilter = notFoundFilter;
     }
+
+    @Autowired
+    @Qualifier("delegatedAuthenticationEntryPoint")
+    AuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
