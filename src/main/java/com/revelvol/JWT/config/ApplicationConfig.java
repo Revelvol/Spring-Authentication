@@ -26,7 +26,8 @@ public class ApplicationConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> repository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not Found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Username not Found"));
+        //todo this user not found is not giving error 400, it give 500 internal server errror
     }
 
     @Bean

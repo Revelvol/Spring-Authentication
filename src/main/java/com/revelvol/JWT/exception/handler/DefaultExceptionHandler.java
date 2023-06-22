@@ -2,10 +2,12 @@ package com.revelvol.JWT.exception.handler;
 
 import com.revelvol.JWT.exception.UserNotFoundException;
 import com.revelvol.JWT.response.ApiResponse;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,20 +18,66 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.HashMap;
 import java.util.Map;
 
+
+// im going to override all the Response Entity Handler
 @ControllerAdvice
 public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 
 
-    @ExceptionHandler(UserNotFoundException.class)
-    protected ResponseEntity<ApiResponse> handleDefaultException(UserNotFoundException ex) {
-        ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+    @ExceptionHandler({UserNotFoundException.class, TransactionSystemException.class})
+    protected ResponseEntity<Object> handleDefaultException(Exception ex) {
+
+        // todo rewrite using switch statement
+        if (ex instanceof TransactionSystemException subEx) {
+            return handleTransactionViolation(subEx);
+        } else if (ex instanceof UserNotFoundException subEx) {
+            return handleViolation(subEx);
+
+        } else{
+            ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "the request method is not valid");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+
+
+    // custom constraint violation handler
+    protected ResponseEntity<Object> handleViolation(Exception ex) {
+        ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "the request method is not valid");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+
+    }
+
+    protected ResponseEntity<Object> handleTransactionViolation(TransactionSystemException ex) {
+        if (ex.getRootCause() instanceof ConstraintViolationException subEx ){
+            return handleConstraintViolationException(subEx);
+        }
+
+        return handleViolation(ex);
+    }
+
+    private ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException subEx) {
+
+        Map<String, Object> errors = new HashMap<>();
+
+        subEx.getConstraintViolations().forEach(violation -> {
+            String fieldName = violation.getPropertyPath().toString();
+            String errorMessage = violation.getMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+
+        ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "The request is not valid");
+        response.setData(errors);
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    // override the handle method argument not valid on the default parent class exception
     @Override
-    @ExceptionHandler({MethodArgumentNotValidException.class})
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         Map<String, Object> errors = new HashMap<>();
+
 
         //get the error from the field
         ex.getBindingResult().getAllErrors().forEach((error) -> {

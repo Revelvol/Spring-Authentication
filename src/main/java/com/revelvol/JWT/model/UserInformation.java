@@ -2,6 +2,7 @@ package com.revelvol.JWT.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import org.springframework.lang.NonNull;
 
@@ -10,6 +11,7 @@ import java.util.Date;
 
 @Entity
 public class UserInformation {
+
 
     // both of this map user id as the primary key for this user information column
     @Id
@@ -21,6 +23,7 @@ public class UserInformation {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @NotNull
     @NotBlank(message = "fullName cannot be empty")
     private String fullName;
 
@@ -32,7 +35,6 @@ public class UserInformation {
     private String gender;
 
     private String language;
-
     //todo add address here one to one connection
 
 

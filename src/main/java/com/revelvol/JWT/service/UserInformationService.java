@@ -70,7 +70,7 @@ public class UserInformationService {
         UserInformation userInformation = userInformationRepository.findById(user.getId()).orElse(null);
 
         if (userInformation != null) {
-            return new ApiResponse(HttpStatus.BAD_REQUEST.value(), "User Information already exist");
+            return new ApiResponse(HttpStatus.BAD_REQUEST.value(), "User Information already exist, please us patch or put to manipulate the data ");
         } else {
 
             userInformation = new UserInformation();
