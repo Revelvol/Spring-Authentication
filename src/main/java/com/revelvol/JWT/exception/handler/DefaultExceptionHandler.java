@@ -1,5 +1,6 @@
 package com.revelvol.JWT.exception.handler;
 
+import com.revelvol.JWT.exception.UserAlreadyExistsException;
 import com.revelvol.JWT.exception.UserNotFoundException;
 import com.revelvol.JWT.response.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
@@ -24,38 +25,53 @@ import java.util.Map;
 public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 
 
-    @ExceptionHandler({UserNotFoundException.class, TransactionSystemException.class})
+    @ExceptionHandler({UserNotFoundException.class, TransactionSystemException.class, UserAlreadyExistsException.class, IllegalArgumentException.class})
     protected ResponseEntity<Object> handleDefaultException(Exception ex) {
-
         // todo rewrite using switch statement
         if (ex instanceof TransactionSystemException subEx) {
             return handleTransactionViolation(subEx);
         } else if (ex instanceof UserNotFoundException subEx) {
-            return handleViolation(subEx);
+            return createViolationResponse(subEx);
 
-        } else{
+        } else if (ex instanceof IllegalArgumentException subEx) {
+            return handleIllegalArgumentException(subEx);
+
+        } else {
             ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "the request method is not valid");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
+    private ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException subEx) {
+
+        String cause  = subEx.getMessage();
+        HashMap<String,Object> errors  = new HashMap();
+        errors.put("field",cause);
+
+        ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "The request is not valid");
+        response.setData(errors);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 
 
-    // custom constraint violation handler
-    protected ResponseEntity<Object> handleViolation(Exception ex) {
-        ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "the request method is not valid");
+    // Default handle Violation Exception
+    protected ResponseEntity<Object> createViolationResponse(Exception ex) {
+        ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 
     }
 
+    // Handle transaction violation and find out the root cause for that violation
     protected ResponseEntity<Object> handleTransactionViolation(TransactionSystemException ex) {
-        if (ex.getRootCause() instanceof ConstraintViolationException subEx ){
+        if (ex.getRootCause() instanceof ConstraintViolationException subEx) {
             return handleConstraintViolationException(subEx);
         }
 
-        return handleViolation(ex);
+        return createViolationResponse(ex);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
     private ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException subEx) {
 
         Map<String, Object> errors = new HashMap<>();

@@ -54,4 +54,26 @@ public class ApiResponse {
         return data.get(key);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ApiResponse{")
+                .append("statusCode=").append(statusCode)
+                .append(", message='").append(message).append('\'')
+                .append(", data={");
+
+        if (data != null) {
+            boolean isFirst = true;
+            for (Map.Entry<String, Object> entry : data.entrySet()) {
+                if (!isFirst) {
+                    sb.append(", ");
+                }
+                sb.append(entry.getKey()).append("=").append(entry.getValue());
+                isFirst = false;
+            }
+        }
+
+        sb.append("}}");
+        return sb.toString();
+    }
 }

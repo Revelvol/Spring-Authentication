@@ -1,8 +1,12 @@
 package com.revelvol.JWT.request;
 
+import jakarta.validation.constraints.Size;
+
 public class RegisterRequest {
 
     private String email;
+
+    @Size(min=8, message = "please enter minimum password length of 8")
     private String password;
 
     public RegisterRequest() {
