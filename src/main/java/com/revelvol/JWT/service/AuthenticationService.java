@@ -11,7 +11,9 @@ import com.revelvol.JWT.request.AuthenticationRequest;
 import com.revelvol.JWT.request.RegisterRequest;
 import com.revelvol.JWT.response.ApiResponse;
 import com.revelvol.JWT.response.AuthenticationResponse;
+import com.revelvol.JWT.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
