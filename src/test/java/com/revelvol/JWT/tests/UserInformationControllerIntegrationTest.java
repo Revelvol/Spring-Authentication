@@ -1,4 +1,4 @@
-package com.revelvol.JWT;
+package com.revelvol.JWT.tests;
 
 import org.springframework.boot.test.context.SpringBootTest;
 

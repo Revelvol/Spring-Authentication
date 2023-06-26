@@ -1,4 +1,4 @@
-package com.revelvol.JWT;
+package com.revelvol.JWT.tests;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -7,14 +7,16 @@ import com.revelvol.JWT.model.User;
 import com.revelvol.JWT.repository.TestH2RoleRepository;
 import com.revelvol.JWT.repository.TestH2UserRepository;
 import com.revelvol.JWT.response.ApiResponse;
+import com.revelvol.JWT.service.JwtService;
 import org.junit.jupiter.api.*;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +32,8 @@ public class AuthenticationControllerIntegrationTest {
     private static RestTemplate restTemplate;
     private static ObjectMapper objectMapper;
 
+    private static JwtService jwtService;
+
 
     @LocalServerPort // get the random portfrom the RANDOM_PORT
     private int port;
@@ -40,14 +44,15 @@ public class AuthenticationControllerIntegrationTest {
     private TestH2UserRepository testH2UserRepository;
     @Autowired
     private TestH2RoleRepository testH2RoleRepository;
-    @Autowired
-    private MockMvc mockMvc;
 
 
     @BeforeAll  //before all test, initialize this rest  template
     public static void init() {
         restTemplate = new RestTemplate();
         objectMapper = new ObjectMapper();
+        jwtService = Mockito.mock(JwtService.class);
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn("mocked_username");
+        Mockito.when(jwtService.isTokenValid(Mockito.anyString(), Mockito.any(User.class))).thenReturn(true);
     }
 
     @BeforeEach //before running each test case, execute this
@@ -56,6 +61,9 @@ public class AuthenticationControllerIntegrationTest {
         registerUrl = baseUrl.concat(":").concat(String.valueOf(port)).concat("/api/v1/auth/register");
         authenticateUrl = baseUrl.concat(":").concat(String.valueOf(port)).concat("/api/v1/auth/authenticate");
         MockitoAnnotations.openMocks(this);
+
+        //mock the jwt service
+
 
     }
 
@@ -89,7 +97,7 @@ public class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    public void testRegisterUser2() { //todo add json mocking
+    public void testRegisterUserWithValidToken() { //todo add json mocking
         User user = new User("test123@gmail.com", "12345457647", new HashSet<>());
 
         ApiResponse response = restTemplate.postForObject(registerUrl, user, ApiResponse.class);
@@ -97,8 +105,12 @@ public class AuthenticationControllerIntegrationTest {
         //perform validation to the response entity
         Assertions.assertEquals(HttpStatus.OK.value(), response.getStatusCode());
         Assertions.assertEquals(1, testH2UserRepository.findAll().size());
-        System.out.println("token " + response.getData().get("token"));
 
+
+        String token = response.getData().get("token").toString();
+
+
+        Assertions.assertEquals("mocked_username", jwtService.extractUsername(token));
 
     }
 
@@ -134,9 +146,9 @@ public class AuthenticationControllerIntegrationTest {
 
             ApiResponse responseMap = objectMapper.readValue(responseBody, ApiResponse.class);
             Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), responseMap.getStatusCode());
+            System.out.println("response " + responseMap.toString());
 
-            Assertions.assertEquals("rawPassword cannot be null", responseMap.getData("field"));
-            Assertions.assertEquals("todo fix this validaiton so the validaiton is in request", "dumbass");
+            Assertions.assertEquals("must not be null", responseMap.getData("password"));
 
 
         }
@@ -219,24 +231,49 @@ public class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    void testRegisterUserInvalidEmail() {
+    void testRegisterUserInvalidEmail() throws JsonProcessingException {
         //todo add validaiton  to the response body and email REGEX validation
         User user = new User("test123", "12345676889", new HashSet<>());
 
-        ApiResponse response = restTemplate.postForObject(registerUrl, user, ApiResponse.class); // first post
+        try {
+            restTemplate.postForObject(registerUrl, user, ApiResponse.class);
 
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+        } catch (HttpClientErrorException e) {
+
+            String responseBody = e.getResponseBodyAsString();
+
+            ApiResponse responseMap = objectMapper.readValue(responseBody, ApiResponse.class);
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), responseMap.getStatusCode());
+            Assertions.assertEquals("the request is not valid", responseMap.getMessage());
+            Assertions.assertEquals("must be a well-formed email address", responseMap.getData("email"));
+
+
+        }
         Assertions.assertEquals(0, testH2UserRepository.findAll().size());
 
-        // Assert that the second post throws an error
-        Assertions.assertThrows(Exception.class, () -> {
-            restTemplate.postForObject(registerUrl, user, ApiResponse.class); // second post should throw an error
-        });
-        System.out.println("Data " + response.toString());
 
     }
 
     @Test
-    void testRegisterUserNoEmailPassword() {
+    void testRegisterUserNoEmailPassword() throws JsonProcessingException {
+        User user = new User();
+        user.setUserRoles(new HashSet<>());
+        try {
+            restTemplate.postForObject(registerUrl, user, ApiResponse.class);
+
+        } catch (HttpClientErrorException e) {
+
+            String responseBody = e.getResponseBodyAsString();
+
+
+            ApiResponse responseMap = objectMapper.readValue(responseBody, ApiResponse.class);
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), responseMap.getStatusCode());
+            Assertions.assertEquals("the request is not valid", responseMap.getMessage());
+            Assertions.assertEquals("must not be null", responseMap.getData("email"));
+            Assertions.assertEquals("must not be null", responseMap.getData("password"));
+
+
+        }
+
     }
 }

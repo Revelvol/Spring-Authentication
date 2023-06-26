@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 
 //hold configuration like bean etc
 @Configuration
@@ -27,7 +26,7 @@ public class ApplicationConfig {
     public UserDetailsService userDetailsService() {
         return username -> repository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not Found"));
-        //todo this user not found is not giving error 400, it give 500 internal server errror
+        //todo this user not found is not giving error 400, it give 500 internal server error
     }
 
     @Bean

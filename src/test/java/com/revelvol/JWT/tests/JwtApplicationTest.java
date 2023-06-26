@@ -1,4 +1,4 @@
-package com.revelvol.JWT;
+package com.revelvol.JWT.tests;
 
 import com.revelvol.JWT.controller.AuthenticationController;
 import com.revelvol.JWT.controller.DemoController;

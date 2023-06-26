@@ -1,8 +1,6 @@
 package com.revelvol.JWT.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.revelvol.JWT.model.User;
-import jakarta.persistence.*;
 
 import java.util.Date;
 
