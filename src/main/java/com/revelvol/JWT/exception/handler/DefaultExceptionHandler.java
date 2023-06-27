@@ -27,19 +27,32 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({UserNotFoundException.class, TransactionSystemException.class, UserAlreadyExistsException.class, IllegalArgumentException.class})
     protected ResponseEntity<Object> handleDefaultException(Exception ex) {
-        // todo rewrite using switch statement
+
         if (ex instanceof TransactionSystemException subEx) {
             return handleTransactionViolation(subEx);
         } else if (ex instanceof UserNotFoundException subEx) {
-            return createViolationResponse(subEx);
+            return handleUserNotFoundException(subEx);
 
         } else if (ex instanceof IllegalArgumentException subEx) {
             return handleIllegalArgumentException(subEx);
 
-        } else {
+        }
+
+        else {
             ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "the request method is not valid");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+    }
+
+    // Default handle Violation Exception
+    protected ResponseEntity<Object> createDefaultResponse(Exception ex) {
+        ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+
+    }
+
+    private ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException subEx){
+        return createDefaultResponse(subEx);
     }
 
     private ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException subEx) {
@@ -55,12 +68,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
-    // Default handle Violation Exception
-    protected ResponseEntity<Object> createViolationResponse(Exception ex) {
-        ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 
-    }
 
     // Handle transaction violation and find out the root cause for that violation
     protected ResponseEntity<Object> handleTransactionViolation(TransactionSystemException ex) {
@@ -68,7 +76,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
             return handleConstraintViolationException(subEx);
         }
 
-        return createViolationResponse(ex);
+        return createDefaultResponse(ex);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

@@ -21,8 +21,9 @@ public class JwtService {
     // todo move secret key to environment variable
     // use hex as best practice and easier implementation
     private static final String SECRET_KEY = "743777217A25432A462D4A614E645266556A586E3272357538782F413F442847";
+
     public String extractUsername(String jwt) {
-        return extractClaims(jwt , Claims::getSubject);
+        return extractClaims(jwt, Claims::getSubject);
         //look at that :: getsubject, jadi ini shorthand methjod to overiide apply di claiim resoilver diabawah
     }
 
@@ -36,7 +37,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24 ))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -45,7 +46,29 @@ public class JwtService {
     public String generateToken(
             UserDetails userDetails
     ) {
-        return generateToken(new HashMap<>(),userDetails);
+        return generateToken(new HashMap<>(), userDetails);
+    }
+
+    // generate Expired Token for testing
+    public String generateExpiredToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        long currentTimeMillis = System.currentTimeMillis();
+        long issuedAtMillis = currentTimeMillis - (60 * 1000); // 60 seconds ago
+        long expirationMillis = currentTimeMillis - (30 * 1000); // 30 seconds ago
+
+        Date issuedAt = new Date(issuedAtMillis);
+        Date expiration = new Date(expirationMillis);
+
+        return Jwts.builder()
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(issuedAt)
+                .setExpiration(expiration)
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateExpiredToken(UserDetails userDetails) {
+        return generateExpiredToken(new HashMap<>(), userDetails);
     }
 
     // method to validate token
@@ -71,6 +94,7 @@ public class JwtService {
         //kayaknya ini just some kind of java thing buat execute function
         return claimsResolver.apply(claims);
     }
+
     // extract all claims from the token
     private Claims extractAllClaims(String token) {
 
@@ -81,6 +105,7 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
     //get the signin key, it return a key type that the jsot will use
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
