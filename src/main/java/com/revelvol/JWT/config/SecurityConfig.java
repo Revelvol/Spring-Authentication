@@ -51,8 +51,8 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) //add new session for each request
                 .and()
                 .authenticationProvider(authenticationProvider)
-                .addFilterAfter(notFoundFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthFilter, NotFoundFilter.class) // we want jwt filter to do first before the password
+                .addFilterBefore(notFoundFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthFilter, NotFoundFilter.class) // we want jwt filter to do first before the password
                 .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
                 
         return http.build();

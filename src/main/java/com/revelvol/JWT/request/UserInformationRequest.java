@@ -1,18 +1,11 @@
 package com.revelvol.JWT.request;
 
-import jakarta.validation.constraints.NotNull;
-import org.springframework.format.annotation.DateTimeFormat;
-
 import java.util.Date;
 
 public class UserInformationRequest {
 
-    @NotNull
     private String fullName;
-
-    @DateTimeFormat
     private Date dateOfBirth;
-
     private String phoneNumber;
     private String gender;
     private String language;
