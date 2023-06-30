@@ -1,13 +1,24 @@
 package com.revelvol.JWT.request;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.util.Date;
 
 public class UserInformationRequest {
-
+    @NotNull
     private String fullName;
+
+    @DateTimeFormat
     private Date dateOfBirth;
+
+    @Pattern(regexp = "^\\+\\d{1,3}\\d{4,14}$", message = "Phone number must be in international format, e.g., +1234567890")
     private String phoneNumber;
+
+    @Pattern(regexp = "^[MF]$", message = "Gender must be either 'M' or 'F'")
     private String gender;
+
     private String language;
 
     public UserInformationRequest() {
@@ -59,5 +70,16 @@ public class UserInformationRequest {
 
     public void setLanguage(String language) {
         this.language = language;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "fullName='" + fullName + '\'' +
+                ", dateOfBirth=" + dateOfBirth +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", gender='" + gender + '\'' +
+                ", language='" + language + '\'' +
+                '}';
     }
 }

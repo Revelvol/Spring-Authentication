@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.revelvol.JWT.model.User;
 import jakarta.persistence.*;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class UserInformationResponse extends ApiResponse {
 
@@ -39,7 +41,7 @@ public class UserInformationResponse extends ApiResponse {
 
     public void setUserId(int userId) {
         this.userId = userId;
-        addData("user_id", userId);
+        addData("userId", userId);
     }
 
     @JsonIgnore
@@ -49,7 +51,7 @@ public class UserInformationResponse extends ApiResponse {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
-        addData("full_name", fullName);
+        addData("fullName", fullName);
     }
 
     @JsonIgnore
@@ -58,8 +60,10 @@ public class UserInformationResponse extends ApiResponse {
     }
 
     public void setDateOfBirth(Date dateOfBirth) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
         this.dateOfBirth = dateOfBirth;
-        addData("date_of_birth", dateOfBirth);
+        addData("dateOfBirth", dateFormat.format(dateOfBirth));
     }
 
     @JsonIgnore
@@ -69,7 +73,7 @@ public class UserInformationResponse extends ApiResponse {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-        addData("phone_number", phoneNumber);
+        addData("phoneNumber", phoneNumber);
     }
 
     @JsonIgnore

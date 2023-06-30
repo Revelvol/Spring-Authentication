@@ -1,8 +1,13 @@
 package com.revelvol.JWT.controller;
 
 
+import com.revelvol.JWT.exception.UserNotFoundException;
+import com.revelvol.JWT.model.User;
+import com.revelvol.JWT.repository.UserRepository;
 import com.revelvol.JWT.request.UserInformationRequest;
 import com.revelvol.JWT.response.ApiResponse;
+import com.revelvol.JWT.response.UserInformationResponse;
+import com.revelvol.JWT.service.JwtService;
 import com.revelvol.JWT.service.UserInformationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +22,16 @@ import org.springframework.web.bind.annotation.*;
 public class UserInformationController {
 
     private UserInformationService userInformationService;
+    private UserRepository userRepository;
+
+    private JwtService jwtService;
+
 
     @Autowired
-    public UserInformationController(UserInformationService userInformationService) {
+    public UserInformationController(UserInformationService userInformationService, UserRepository userRepository, JwtService jwtService) {
         this.userInformationService = userInformationService;
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
     }
 
     private static ResponseEntity<ApiResponse> validateRequest(UserInformationRequest request) {
@@ -38,9 +49,23 @@ public class UserInformationController {
     public ResponseEntity<ApiResponse> getUserInformation(@RequestHeader HttpHeaders headers) {
         String authHeader = headers.getFirst("Authorization");
         String token = authHeader.substring(7);
+        // todo fix this logic by adding id to the jsot token
+        ApiResponse userInformation = null;
+        try {
+            userInformation = userInformationService.getUserInformation(token);
+            return ResponseEntity.ok(userInformation);
+        } catch (UserNotFoundException e) {
 
-        ApiResponse userInformation = userInformationService.getUserInformation(token);
-        return ResponseEntity.ok(userInformation);
+            String email = jwtService.extractUsername(token);
+            User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(
+                    "User Does not Exist"));
+
+            UserInformationResponse emptyResponse = new UserInformationResponse(200,
+                    "User Information is not found, returning empty user information body");
+            emptyResponse.setUserId(user.getId());
+            return ResponseEntity.ok(emptyResponse);
+        }
+
     }
 
     @Transactional
