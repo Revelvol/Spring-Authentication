@@ -1,15 +1,18 @@
 package com.revelvol.JWT.request;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
 public class UserInformationRequest {
+
     @NotNull
     private String fullName;
 
+    @Past(message = "Date of birth must be in the past")
     @DateTimeFormat
     private Date dateOfBirth;
 

@@ -10,18 +10,14 @@ import com.revelvol.JWT.request.RegisterRequest;
 import com.revelvol.JWT.request.UserInformationRequest;
 import com.revelvol.JWT.response.ApiResponse;
 import com.revelvol.JWT.service.JwtService;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
@@ -33,7 +29,6 @@ import java.util.TimeZone;
 public class UserInformationControllerIntegrationTest {
     private static RestTemplate restTemplate;
     private static ObjectMapper objectMapper;
-
 
 
     private static HttpHeaders headers;
@@ -95,10 +90,10 @@ public class UserInformationControllerIntegrationTest {
             restTemplate.getForObject(url, Object.class);
         } catch (HttpClientErrorException e) {
             String responseBody = e.getResponseBodyAsString();
-            ApiResponse  responseMap = objectMapper.readValue(responseBody, ApiResponse.class);
+            ApiResponse responseMap = objectMapper.readValue(responseBody, ApiResponse.class);
 
 
-            Assertions.assertEquals(responseMap.getStatusCode(),HttpStatus.FORBIDDEN.value());
+            Assertions.assertEquals(responseMap.getStatusCode(), HttpStatus.FORBIDDEN.value());
         }
 
     }
@@ -112,7 +107,9 @@ public class UserInformationControllerIntegrationTest {
             restTemplate.exchange(url, HttpMethod.GET, entity, ApiResponse.class);
         } catch (HttpClientErrorException e) {
             Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
-            Assertions.assertEquals("400 : \"{\"statusCode\":400,\"message\":\"User information Does not Exist\",\"data\":{}}\"", e.getMessage());
+            Assertions.assertEquals(
+                    "400 : \"{\"statusCode\":400,\"message\":\"User information Does not Exist\",\"data\":{}}\"",
+                    e.getMessage());
         }
 
     }
@@ -120,7 +117,7 @@ public class UserInformationControllerIntegrationTest {
     @Test
     void testGetUserWithExpiredToken() throws JsonProcessingException {
         RegisterRequest registerRequest = new RegisterRequest("test@gmail.com", "1234567890");
-       // generate the expired token for the registered user
+        // generate the expired token for the registered user
         User user = new User();
         user.setEmail("test@gmail.com");
         user.setPassword("1234567890");
@@ -145,7 +142,7 @@ public class UserInformationControllerIntegrationTest {
 
     @Test
     void testGetUserWithMalformedToken() throws JsonProcessingException {
-        String malformedToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGdtYWlsLmNvbSIsImlhdCI6MTUxNjIzOTAyMiwgImV4cCI6MTUxNjIzOTAyMy";
+        String malformedToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGdtYWlsLmNvbSIsImlhdCI6MTUxNjIzOTAyMiwgImV4cCI6MTUxNjIzOTAyMy";
 
 
         // do the http exchange to the get user but it was expired
@@ -191,10 +188,11 @@ public class UserInformationControllerIntegrationTest {
         headers.setBearerAuth(token);
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<ApiResponse> response = restTemplate.exchange(url,HttpMethod.GET, entity, ApiResponse.class);
+        ResponseEntity<ApiResponse> response = restTemplate.exchange(url, HttpMethod.GET, entity, ApiResponse.class);
 
         Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
-        Assertions.assertEquals("User Information is not found, returning empty user information body", response.getBody().getMessage());
+        Assertions.assertEquals("User Information is not found, returning empty user information body",
+                response.getBody().getMessage());
         Assertions.assertNotNull(response.getBody().getData("userId"));
 
     }
@@ -211,21 +209,22 @@ public class UserInformationControllerIntegrationTest {
         payload.setGender("M");
         payload.setDateOfBirth(curDate);
         payload.setLanguage("Indonesia");
-        payload.setPhoneNumber("+628543284939");;
+        payload.setPhoneNumber("+628543284939");
+        ;
 
 
         HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
 
         ResponseEntity<ApiResponse> response = restTemplate.exchange(url, HttpMethod.POST, entity, ApiResponse.class);
 
-        Assertions.assertEquals(HttpStatus.OK,response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
 
 
-        Assertions.assertEquals( "Udin Tester", response.getBody().getData("fullName"));
-        Assertions.assertEquals( "M", response.getBody().getData("gender"));
-        Assertions.assertEquals( "+628543284939", response.getBody().getData("phoneNumber"));
-        Assertions.assertEquals( dateFormat.format(curDate), response.getBody().getData("dateOfBirth"));
-        Assertions.assertEquals( "Indonesia", response.getBody().getData("language"));
+        Assertions.assertEquals("Udin Tester", response.getBody().getData("fullName"));
+        Assertions.assertEquals("M", response.getBody().getData("gender"));
+        Assertions.assertEquals("+628543284939", response.getBody().getData("phoneNumber"));
+        Assertions.assertEquals(dateFormat.format(curDate), response.getBody().getData("dateOfBirth"));
+        Assertions.assertEquals("Indonesia", response.getBody().getData("language"));
 
     }
 
@@ -239,7 +238,8 @@ public class UserInformationControllerIntegrationTest {
         payload.setGender("M");
         payload.setDateOfBirth(curDate);
         payload.setLanguage("Indonesia");
-        payload.setPhoneNumber("+628543284939");;
+        payload.setPhoneNumber("+628543284939");
+        ;
 
 
         HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
@@ -251,8 +251,8 @@ public class UserInformationControllerIntegrationTest {
         } catch (HttpClientErrorException e) {
             String responseBody = e.getResponseBodyAsString();
             ApiResponse response = objectMapper.readValue(responseBody, ApiResponse.class);
-            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(),response.getStatusCode());
-            Assertions.assertEquals( "must not be null", response.getData("fullName"));
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+            Assertions.assertEquals("must not be null", response.getData("fullName"));
 
         }
     }
@@ -268,7 +268,8 @@ public class UserInformationControllerIntegrationTest {
         payload.setGender("M");
         payload.setDateOfBirth(curDate);
         payload.setLanguage("Indonesia");
-        payload.setPhoneNumber("08543284939");;
+        payload.setPhoneNumber("08543284939");
+        ;
 
 
         HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
@@ -280,8 +281,9 @@ public class UserInformationControllerIntegrationTest {
         } catch (HttpClientErrorException e) {
             String responseBody = e.getResponseBodyAsString();
             ApiResponse response = objectMapper.readValue(responseBody, ApiResponse.class);
-            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(),response.getStatusCode());
-            Assertions.assertEquals( "Phone number must be in international format, e.g., +1234567890", response.getData("phoneNumber"));
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+            Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890",
+                    response.getData("phoneNumber"));
 
         }
     }
@@ -297,7 +299,8 @@ public class UserInformationControllerIntegrationTest {
         payload.setGender("Male");
         payload.setDateOfBirth(curDate);
         payload.setLanguage("Indonesia");
-        payload.setPhoneNumber("+628543284939");;
+        payload.setPhoneNumber("+628543284939");
+        ;
 
 
         HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
@@ -309,8 +312,8 @@ public class UserInformationControllerIntegrationTest {
         } catch (HttpClientErrorException e) {
             String responseBody = e.getResponseBodyAsString();
             ApiResponse response = objectMapper.readValue(responseBody, ApiResponse.class);
-            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(),response.getStatusCode());
-            Assertions.assertEquals( "Gender must be either 'M' or 'F'", response.getData("gender"));
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+            Assertions.assertEquals("Gender must be either 'M' or 'F'", response.getData("gender"));
 
         }
     }
@@ -326,7 +329,192 @@ public class UserInformationControllerIntegrationTest {
         payload.setGender("m");
         payload.setDateOfBirth(curDate);
         payload.setLanguage("Indonesia");
-        payload.setPhoneNumber("08543284939");;
+        payload.setPhoneNumber("08543284939");
+        ;
+
+
+        HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
+
+        try {
+            restTemplate.exchange(url, HttpMethod.POST, entity, ApiResponse.class);
+        } catch (HttpClientErrorException e) {
+            String responseBody = e.getResponseBodyAsString();
+            ApiResponse response = objectMapper.readValue(responseBody, ApiResponse.class);
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+            Assertions.assertEquals("must not be null", response.getData("fullName"));
+            Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890",
+                    response.getData("phoneNumber"));
+            Assertions.assertEquals("Gender must be either 'M' or 'F'", response.getData("gender"));
+
+        }
+    }
+
+    // put test
+    @Test
+    void putUserInformationErrorNotFound() throws JsonProcessingException {
+        //test sebelum post dia mestinya return 0 Not Found
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+
+        payload.setFullName("udin hunter 2");
+        payload.setGender("M");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Indonesia");
+        payload.setPhoneNumber("+628543284939");
+        ;
+
+        HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
+        try {
+            restTemplate.exchange(url, HttpMethod.PUT, entity, ApiResponse.class);
+        } catch (HttpClientErrorException e) {
+            ApiResponse response = objectMapper.readValue(e.getResponseBodyAsString(), ApiResponse.class);
+
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+            Assertions.assertEquals("User information Does not Exist", response.getMessage());
+        }
+
+
+    }
+
+    private ResponseEntity<ApiResponse> postDefaultUser() {
+
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+        payload.setFullName("Udin Tester");
+
+        payload.setGender("M");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Indonesia");
+        payload.setPhoneNumber("+628543284939");
+
+
+        HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
+
+        ResponseEntity<ApiResponse> response = restTemplate.exchange(url, HttpMethod.POST, entity, ApiResponse.class);
+        return response;
+    }
+
+    @Test
+    void putUserSuccessfully() {
+        postDefaultUser();
+
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+
+        //the data
+        payload.setFullName("Udin Tester updated");
+        payload.setGender("F");
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Singapore");
+        payload.setPhoneNumber("+61854312121");
+
+        //put the user and get the response
+        HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
+
+        ResponseEntity<ApiResponse> updatedResponse = restTemplate.exchange(url,
+                HttpMethod.PUT,
+                entity,
+                ApiResponse.class);
+
+        Assertions.assertEquals(HttpStatus.OK, updatedResponse.getStatusCode());
+
+        Assertions.assertEquals("User updated successfully", updatedResponse.getBody().getMessage());
+        Assertions.assertEquals("Udin Tester updated", updatedResponse.getBody().getData("fullName"));
+        Assertions.assertEquals("F", updatedResponse.getBody().getData("gender"));
+        Assertions.assertEquals("+61854312121", updatedResponse.getBody().getData("phoneNumber"));
+        Assertions.assertEquals(dateFormat.format(curDate), updatedResponse.getBody().getData("dateOfBirth"));
+        Assertions.assertEquals("Singapore", updatedResponse.getBody().getData("language"));
+
+
+    }
+
+    @Test
+    void putUserInvalidFullName() throws JsonProcessingException {
+        postDefaultUser();
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setGender("M");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Indonesia");
+        payload.setPhoneNumber("+628543284939");
+        ;
+
+
+        HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
+
+        try {
+            restTemplate.exchange(url, HttpMethod.PUT, entity, ApiResponse.class);
+
+
+        } catch (HttpClientErrorException e) {
+            String responseBody = e.getResponseBodyAsString();
+            ApiResponse response = objectMapper.readValue(responseBody, ApiResponse.class);
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+            Assertions.assertEquals("must not be null", response.getData("fullName"));
+
+        }
+    }
+
+    @Test
+    void putUserInvalidGender() throws JsonProcessingException {
+        postDefaultUser();
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+        payload.setFullName("Udin Tester updated");
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setGender("emale");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Malaysia");
+        payload.setPhoneNumber("+62854328491");
+        ;
+
+
+        HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
+
+        try {
+            restTemplate.exchange(url, HttpMethod.PUT, entity, ApiResponse.class);
+
+
+        } catch (HttpClientErrorException e) {
+            String responseBody = e.getResponseBodyAsString();
+            ApiResponse response = objectMapper.readValue(responseBody, ApiResponse.class);
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+            Assertions.assertEquals("Gender must be either 'M' or 'F'",
+                    response.getData("gender"));
+
+        }
+
+    }
+
+
+    @Test
+    void putUserInvalidPhoneNumber() throws JsonProcessingException {
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+        payload.setFullName("Udin Tester");
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setGender("M");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Indonesia");
+        payload.setPhoneNumber("08543284939");
+        ;
 
 
         HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
@@ -338,11 +526,73 @@ public class UserInformationControllerIntegrationTest {
         } catch (HttpClientErrorException e) {
             String responseBody = e.getResponseBodyAsString();
             ApiResponse response = objectMapper.readValue(responseBody, ApiResponse.class);
-            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(),response.getStatusCode());
-            Assertions.assertEquals( "must not be null", response.getData("fullName"));
-            Assertions.assertEquals( "Phone number must be in international format, e.g., +1234567890", response.getData("phoneNumber"));
-            Assertions.assertEquals( "Gender must be either 'M' or 'F'", response.getData("gender"));
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+            Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890",
+                    response.getData("phoneNumber"));
 
         }
+    }
+
+    @Test
+    void putUserInvalidAll() throws JsonProcessingException {
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setGender("Male");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Indonesiaas");
+        payload.setPhoneNumber("0543284939");
+        ;
+
+
+        HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
+
+        try {
+            restTemplate.exchange(url, HttpMethod.POST, entity, ApiResponse.class);
+
+
+        } catch (HttpClientErrorException e) {
+            String responseBody = e.getResponseBodyAsString();
+            ApiResponse response = objectMapper.readValue(responseBody, ApiResponse.class);
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
+            Assertions.assertEquals("must not be null", response.getData("fullName"));
+            Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890",
+                    response.getData("phoneNumber"));
+            Assertions.assertEquals("Gender must be either 'M' or 'F'", response.getData("gender"));
+
+        }
+    }
+
+    @Test
+    void putUserSuccessFullOnlyFullNameReturnFullNameOnly() {
+        ResponseEntity<ApiResponse> defaultResponse= postDefaultUser();
+
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+
+        //the data
+        payload.setFullName("Udin Tester updated");
+
+        //put the user and get the response
+        HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
+
+        ResponseEntity<ApiResponse> updatedResponse = restTemplate.exchange(url,
+                HttpMethod.PUT,
+                entity,
+                ApiResponse.class);
+
+        Assertions.assertEquals(HttpStatus.OK, updatedResponse.getStatusCode());
+
+        Assertions.assertNotEquals( defaultResponse.getBody(), updatedResponse.getBody());
+
+        Assertions.assertEquals("User updated successfully", updatedResponse.getBody().getMessage());
+        Assertions.assertEquals("Udin Tester updated", updatedResponse.getBody().getData("fullName"));
+        Assertions.assertEquals(null, updatedResponse.getBody().getData("gender"));
+        Assertions.assertEquals(null, updatedResponse.getBody().getData("phoneNumber"));
+        Assertions.assertEquals(null, updatedResponse.getBody().getData("dateOfBirth"));
+        Assertions.assertEquals(null, updatedResponse.getBody().getData("language"));
+
     }
 }

@@ -89,7 +89,7 @@ public class UserInformationController {
     @PutMapping(consumes = "application/json", produces = "application/json")
     @Transactional
     public ResponseEntity<ApiResponse> putUserInformation(
-            @RequestBody(required = false) UserInformationRequest request,
+            @Valid @RequestBody(required = false) UserInformationRequest request,
             @RequestHeader HttpHeaders headers
     ) {
         ApiResponse response;
@@ -98,7 +98,7 @@ public class UserInformationController {
                 request);
         if (response1 != null) return response1;
         String token = headers.getFirst("Authorization").substring(7);
-        response = userInformationService.updateUserInformation(request, token); // Replace with your update logic
+        response = userInformationService.updateUserInformation(request, token);
         return ResponseEntity.ok(response);
 
     }
@@ -106,7 +106,7 @@ public class UserInformationController {
     @PatchMapping(consumes = "application/json", produces = "application/json")
     @Transactional
     public ResponseEntity<ApiResponse> patchUserInformation(
-            @RequestBody UserInformationRequest request,
+           @Valid @RequestBody UserInformationRequest request,
             @RequestHeader HttpHeaders headers
     ) {
         ApiResponse response;
@@ -114,7 +114,7 @@ public class UserInformationController {
                 request);
         if (response1 != null) return response1;
         String token = headers.getFirst("Authorization").substring(7);
-        response = userInformationService.patchUserInformation(request, token); // Replace with your patch logic
+        response = userInformationService.patchUserInformation(request, token);
         return ResponseEntity.ok(response);
 
     }

@@ -86,7 +86,7 @@ public class UserInformationService {
             userInformationRepository.save(userInformation);
 
             UserInformationResponse response = new UserInformationResponse(
-                    HttpStatus.OK.value(), "user Information successfully created"
+                    HttpStatus.OK.value(), "User Information successfully created"
             );
 
             setResponse(userInformation, response);
@@ -109,7 +109,7 @@ public class UserInformationService {
         userInformationRepository.save(userInformation);
 
         UserInformationResponse response = new UserInformationResponse(
-                HttpStatus.OK.value(), "user Information successfully created"
+                HttpStatus.OK.value(), "User updated successfully"
         );
 
         setResponse(userInformation, response);
@@ -145,7 +145,7 @@ public class UserInformationService {
         userInformationRepository.save(userInformation);
 
         UserInformationResponse response = new UserInformationResponse(
-                HttpStatus.OK.value(), "User information successfully updated"
+                HttpStatus.OK.value(), "User updated successfully"
         );
 
         setResponse(userInformation, response);

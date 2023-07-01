@@ -1,8 +1,6 @@
 package com.revelvol.JWT.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.revelvol.JWT.model.User;
-import jakarta.persistence.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -24,7 +22,7 @@ public class UserInformationResponse extends ApiResponse {
         super(statusCode, message);
     }
 
-    public UserInformationResponse(int statusCode, String message, int userId , String fullName, Date dateOfBirth, String phoneNumber, String gender, String language) {
+    public UserInformationResponse(int statusCode, String message, int userId, String fullName, Date dateOfBirth, String phoneNumber, String gender, String language) {
         super(statusCode, message);
         this.userId = userId;
         this.fullName = fullName;
@@ -63,7 +61,11 @@ public class UserInformationResponse extends ApiResponse {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
         this.dateOfBirth = dateOfBirth;
-        addData("dateOfBirth", dateFormat.format(dateOfBirth));
+        if (dateOfBirth != null) {
+            addData("dateOfBirth", dateFormat.format(dateOfBirth));
+        } else {
+            addData("dateOfBirth", null); // or any appropriate value for representing a null date
+        }
     }
 
     @JsonIgnore

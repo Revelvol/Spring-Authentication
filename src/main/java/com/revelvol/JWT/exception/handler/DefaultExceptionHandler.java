@@ -3,7 +3,6 @@ package com.revelvol.JWT.exception.handler;
 import com.revelvol.JWT.exception.UserAlreadyExistsException;
 import com.revelvol.JWT.exception.UserNotFoundException;
 import com.revelvol.JWT.response.ApiResponse;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -27,10 +26,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({UserNotFoundException.class, TransactionSystemException.class, UserAlreadyExistsException.class, IllegalArgumentException.class})
     protected ResponseEntity<Object> handleDefaultException(Exception ex) {
-        // todo rewrite using switch statement
-        if (ex instanceof TransactionSystemException subEx) {
-            return handleTransactionViolation(subEx);
-        } else if (ex instanceof UserNotFoundException subEx) {
+        if (ex instanceof UserNotFoundException subEx) {
             return createViolationResponse(subEx);
 
         } else if (ex instanceof IllegalArgumentException subEx) {
@@ -44,9 +40,9 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 
     private ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException subEx) {
 
-        String cause  = subEx.getMessage();
-        HashMap<String,Object> errors  = new HashMap();
-        errors.put("field",cause);
+        String cause = subEx.getMessage();
+        HashMap<String, Object> errors = new HashMap();
+        errors.put("field", cause);
 
         ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "The request is not valid");
         response.setData(errors);
@@ -62,32 +58,6 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 
     }
 
-    // Handle transaction violation and find out the root cause for that violation
-    protected ResponseEntity<Object> handleTransactionViolation(TransactionSystemException ex) {
-        if (ex.getRootCause() instanceof ConstraintViolationException subEx) {
-            return handleConstraintViolationException(subEx);
-        }
-
-        return createViolationResponse(ex);
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    private ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException subEx) {
-
-        Map<String, Object> errors = new HashMap<>();
-
-        subEx.getConstraintViolations().forEach(violation -> {
-            String fieldName = violation.getPropertyPath().toString();
-            String errorMessage = violation.getMessage();
-            errors.put(fieldName, errorMessage);
-        });
-
-
-        ApiResponse response = new ApiResponse(HttpStatus.BAD_REQUEST.value(), "The request is not valid");
-        response.setData(errors);
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
 
     // override the handle method argument not valid on the default parent class exception
     @Override
