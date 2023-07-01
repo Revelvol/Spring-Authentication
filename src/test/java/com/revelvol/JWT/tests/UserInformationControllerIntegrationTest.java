@@ -17,8 +17,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -42,6 +44,7 @@ public class UserInformationControllerIntegrationTest {
     private String authenticateUrl;
 
     private String token;
+    private WebTestClient webTestClient;
 
 
     @Autowired
@@ -73,7 +76,14 @@ public class UserInformationControllerIntegrationTest {
         ApiResponse response = restTemplate.postForObject(registerUrl, registerRequest, ApiResponse.class);
 
         token = response.getData("token").toString();
+
+        // new web test client setup for patch
+        webTestClient = WebTestClient.bindToServer().baseUrl(url).build();
+
+
         MockitoAnnotations.openMocks(this);
+
+
     }
 
     @AfterEach// after each refresh the database
@@ -567,7 +577,7 @@ public class UserInformationControllerIntegrationTest {
 
     @Test
     void putUserSuccessFullOnlyFullNameReturnFullNameOnly() {
-        ResponseEntity<ApiResponse> defaultResponse= postDefaultUser();
+        ResponseEntity<ApiResponse> defaultResponse = postDefaultUser();
 
         headers.setBearerAuth(token);
         UserInformationRequest payload = new UserInformationRequest();
@@ -585,7 +595,7 @@ public class UserInformationControllerIntegrationTest {
 
         Assertions.assertEquals(HttpStatus.OK, updatedResponse.getStatusCode());
 
-        Assertions.assertNotEquals( defaultResponse.getBody(), updatedResponse.getBody());
+        Assertions.assertNotEquals(defaultResponse.getBody(), updatedResponse.getBody());
 
         Assertions.assertEquals("User updated successfully", updatedResponse.getBody().getMessage());
         Assertions.assertEquals("Udin Tester updated", updatedResponse.getBody().getData("fullName"));
@@ -594,5 +604,197 @@ public class UserInformationControllerIntegrationTest {
         Assertions.assertEquals(null, updatedResponse.getBody().getData("dateOfBirth"));
         Assertions.assertEquals(null, updatedResponse.getBody().getData("language"));
 
+    }
+
+    // test patch user
+    //todo resttempalte doesnt  support patch, use webflux
+    @Test
+    void patchUserSuccessfully() {
+        postDefaultUser();
+
+
+        UserInformationRequest payload = new UserInformationRequest();
+
+        //the data
+        payload.setFullName("Udin Tester updated");
+        payload.setGender("F");
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setDateOfBirth(curDate);
+        payload.setPhoneNumber("+61854312121");
+
+        //put the user and get the response
+        webTestClient.patch()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(payload), UserInformationRequest.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(ApiResponse.class)
+                .consumeWith(response -> {
+                    ApiResponse updatedResponse = response.getResponseBody();
+                    Assertions.assertEquals("User updated successfully", updatedResponse.getMessage());
+                    Assertions.assertEquals("Udin Tester updated", updatedResponse.getData("fullName"));
+                    Assertions.assertEquals("F", updatedResponse.getData("gender"));
+                    Assertions.assertEquals("+61854312121", updatedResponse.getData("phoneNumber"));
+                    Assertions.assertEquals(dateFormat.format(curDate), updatedResponse.getData("dateOfBirth"));
+                    Assertions.assertEquals("Indonesia", updatedResponse.getData("language"));
+                });
+
+
+    }
+
+    @Test
+    void patchUserInvalidFullName() throws JsonProcessingException {
+        postDefaultUser();
+        UserInformationRequest payload = new UserInformationRequest();
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setGender("M");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Indonesia");
+        payload.setPhoneNumber("+628543284939");
+        ;
+
+        webTestClient.patch()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(payload), UserInformationRequest.class)
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody(ApiResponse.class)
+                .consumeWith(response -> {
+                    ApiResponse updatedResponse = response.getResponseBody();
+                    Assertions.assertEquals("the request is not valid", updatedResponse.getMessage());
+                    Assertions.assertEquals("must not be null", updatedResponse.getData("fullName"));
+                });
+
+    }
+
+    @Test
+    void patchUserInvalidGender() throws JsonProcessingException {
+        postDefaultUser();
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+        payload.setFullName("Udin Tester updated");
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setGender("emale");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Malaysia");
+        payload.setPhoneNumber("+62854328491");
+        ;
+
+
+        webTestClient.patch()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(payload), UserInformationRequest.class)
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody(ApiResponse.class)
+                .consumeWith(response -> {
+                    ApiResponse updatedResponse = response.getResponseBody();
+                    Assertions.assertEquals("the request is not valid", updatedResponse.getMessage());
+                    Assertions.assertEquals("Gender must be either 'M' or 'F'", updatedResponse.getData("gender"));
+                });
+
+
+    }
+
+
+    @Test
+    void patchUserInvalidPhoneNumber() throws JsonProcessingException {
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+        payload.setFullName("Udin Tester");
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setGender("M");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Indonesia");
+        payload.setPhoneNumber("08543284939");
+        ;
+
+
+        webTestClient.patch()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(payload), UserInformationRequest.class)
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody(ApiResponse.class)
+                .consumeWith(response -> {
+                    ApiResponse updatedResponse = response.getResponseBody();
+                    Assertions.assertEquals("the request is not valid", updatedResponse.getMessage());
+                    Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890", updatedResponse.getData("phoneNumber"));
+                });
+
+    }
+
+    @Test
+    void patchUserInvalidAll() throws JsonProcessingException {
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+        Date curDate = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+        payload.setGender("Male");
+        payload.setDateOfBirth(curDate);
+        payload.setLanguage("Indonesiaas");
+        payload.setPhoneNumber("0543284939");
+        ;
+
+
+        HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
+
+        webTestClient.patch()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(payload), UserInformationRequest.class)
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody(ApiResponse.class)
+                .consumeWith(response -> {
+                    ApiResponse updatedResponse = response.getResponseBody();
+                    Assertions.assertEquals("the request is not valid", updatedResponse.getMessage());
+                    Assertions.assertEquals("must not be null", updatedResponse.getData("fullName"));
+                    Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890", updatedResponse.getData("phoneNumber"));
+                    Assertions.assertEquals("Gender must be either 'M' or 'F'", updatedResponse.getData("gender"));
+                });
+
+    }
+
+    @Test
+    void patchUserSuccessFullOnlyFullNameReturnFullNameOnly() {
+        ResponseEntity<ApiResponse> defaultResponse = postDefaultUser();
+
+        headers.setBearerAuth(token);
+        UserInformationRequest payload = new UserInformationRequest();
+
+        //the data
+        payload.setFullName("Udin Tester updated");
+
+
+        // patch the user
+        webTestClient.patch()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(payload), UserInformationRequest.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(ApiResponse.class)
+                .consumeWith(response -> {
+                    ApiResponse updatedResponse = response.getResponseBody();
+                    Assertions.assertEquals("Udin Tester updated", updatedResponse.getData("fullName"));
+                    Assertions.assertEquals("M", updatedResponse.getData("gender"));
+                    Assertions.assertEquals("+628543284939", updatedResponse.getData("phoneNumber"));
+                    Assertions.assertNotNull(updatedResponse.getData("dateOfBirth"));
+                    Assertions.assertEquals("Indonesia", updatedResponse.getData("language"));
+                });
     }
 }

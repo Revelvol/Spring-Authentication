@@ -103,10 +103,11 @@ public class UserInformationController {
 
     }
 
-    @PatchMapping(consumes = "application/json", produces = "application/json")
+
     @Transactional
+    @PatchMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<ApiResponse> patchUserInformation(
-           @Valid @RequestBody UserInformationRequest request,
+            @Valid @RequestBody UserInformationRequest request,
             @RequestHeader HttpHeaders headers
     ) {
         ApiResponse response;
