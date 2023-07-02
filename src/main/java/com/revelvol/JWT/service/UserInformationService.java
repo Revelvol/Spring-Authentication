@@ -30,14 +30,12 @@ public class UserInformationService {
         String email = jwtService.extractUsername(token);
 
         // todo implement id user insertion to the token body
-        return userRepository.findByEmail
-                (email).orElseThrow(() -> new UserNotFoundException("User Does not Exist"));
+        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User Does not Exist"));
     }
 
     private UserInformation getInformationFromUser(User user) {
-        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElseThrow(
-                () -> new UserNotFoundException("User information Does not Exist")
-        );
+        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElseThrow(() -> new UserNotFoundException(
+                "User information Does not Exist"));
         return userInformation;
     }
 
@@ -54,9 +52,11 @@ public class UserInformationService {
 
         User user = getUser(token);
 
-        UserInformation userInformation = getInformationFromUser(user);
+        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElseThrow(() -> new UserNotFoundException(
+                "User Does Not Exist"));
 
-        UserInformationResponse response = new UserInformationResponse(HttpStatus.OK.value(), "User Information is found");
+        UserInformationResponse response = new UserInformationResponse(HttpStatus.OK.value(),
+                "User Information is found");
         setResponse(userInformation, response);
         return response;
 
@@ -70,7 +70,8 @@ public class UserInformationService {
         UserInformation userInformation = userInformationRepository.findById(user.getId()).orElse(null);
 
         if (userInformation != null) {
-            return new ApiResponse(HttpStatus.BAD_REQUEST.value(), "User Information already exist, please us patch or put to manipulate the data ");
+            return new ApiResponse(HttpStatus.BAD_REQUEST.value(),
+                    "User Information already exist, please us patch or put to manipulate the data ");
         } else {
 
             userInformation = new UserInformation();
@@ -85,9 +86,8 @@ public class UserInformationService {
             //save the user and user information
             userInformationRepository.save(userInformation);
 
-            UserInformationResponse response = new UserInformationResponse(
-                    HttpStatus.OK.value(), "User Information successfully created"
-            );
+            UserInformationResponse response = new UserInformationResponse(HttpStatus.OK.value(),
+                    "User Information successfully created");
 
             setResponse(userInformation, response);
 
@@ -99,7 +99,8 @@ public class UserInformationService {
     public ApiResponse updateUserInformation(UserInformationRequest request, String token) {
         // update > put
         User user = getUser(token);
-        UserInformation userInformation = getInformationFromUser(user);
+        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElseThrow(() -> new UserNotFoundException(
+                "User Information Does not Exist"));
 
         userInformation.setGender(request.getGender());
         userInformation.setLanguage(request.getLanguage());
@@ -108,9 +109,8 @@ public class UserInformationService {
         userInformation.setPhoneNumber(request.getPhoneNumber());
         userInformationRepository.save(userInformation);
 
-        UserInformationResponse response = new UserInformationResponse(
-                HttpStatus.OK.value(), "User updated successfully"
-        );
+        UserInformationResponse response = new UserInformationResponse(HttpStatus.OK.value(),
+                "User updated successfully");
 
         setResponse(userInformation, response);
 
@@ -120,7 +120,8 @@ public class UserInformationService {
 
     public ApiResponse patchUserInformation(UserInformationRequest request, String token) {
         User user = getUser(token);
-        UserInformation userInformation = getInformationFromUser(user);
+        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElseThrow(() -> new UserNotFoundException(
+                "User information Does not Exist"));
 
         if (request.getGender() != null) {
             userInformation.setGender(request.getGender());
@@ -144,13 +145,33 @@ public class UserInformationService {
 
         userInformationRepository.save(userInformation);
 
-        UserInformationResponse response = new UserInformationResponse(
-                HttpStatus.OK.value(), "User updated successfully"
-        );
+        UserInformationResponse response = new UserInformationResponse(HttpStatus.OK.value(),
+                "User updated successfully");
 
         setResponse(userInformation, response);
 
         return response;
     }
 
+    public ApiResponse deleteUserInformation(String token) {
+
+        User user = getUser(token);
+
+        userInformationRepository.findById(user.getId()).orElseThrow(() ->
+                new UserNotFoundException("User information Does not Exist")
+        );
+
+
+        //synchronize user which are the parent for the fetch
+        user.removeUserInformation();
+        userRepository.save(user);
+        userInformationRepository.deleteById(user.getId());
+
+
+        UserInformationResponse response = new UserInformationResponse(HttpStatus.OK.value(),
+                "User id:" + user.getId() + " information has been deleted");
+
+        return response;
+
+    }
 }

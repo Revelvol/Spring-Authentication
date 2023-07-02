@@ -68,7 +68,7 @@ public class UserInformationController {
 
     }
 
-    @Transactional
+
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<ApiResponse> postUserInformation(
             @Valid @RequestBody(required = false) UserInformationRequest request,
@@ -87,7 +87,6 @@ public class UserInformationController {
 
 
     @PutMapping(consumes = "application/json", produces = "application/json")
-    @Transactional
     public ResponseEntity<ApiResponse> putUserInformation(
             @Valid @RequestBody(required = false) UserInformationRequest request,
             @RequestHeader HttpHeaders headers
@@ -104,7 +103,7 @@ public class UserInformationController {
     }
 
 
-    @Transactional
+
     @PatchMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<ApiResponse> patchUserInformation(
             @Valid @RequestBody UserInformationRequest request,
@@ -117,6 +116,19 @@ public class UserInformationController {
         String token = headers.getFirst("Authorization").substring(7);
         response = userInformationService.patchUserInformation(request, token);
         return ResponseEntity.ok(response);
+
+    }
+
+    @Transactional
+    @DeleteMapping
+    public ResponseEntity<ApiResponse> deleteUserInformation(
+            @RequestHeader HttpHeaders headers
+    ) {
+        String authHeader = headers.getFirst("Authorization");
+        String token = authHeader.substring(7);
+        ApiResponse userInformationDelete = userInformationService.deleteUserInformation(token);
+        return ResponseEntity.ok(userInformationDelete);
+
 
     }
 

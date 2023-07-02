@@ -77,6 +77,11 @@ public class User implements UserDetails {
     public void setEmail(String email) {
         this.email = email;
     }
+    public void removeUserInformation() {
+        this.userInformation = null;
+    }
+
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

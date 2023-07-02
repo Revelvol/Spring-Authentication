@@ -105,7 +105,7 @@ public class UserInformationControllerIntegrationTest {
 
             Assertions.assertEquals(responseMap.getStatusCode(), HttpStatus.FORBIDDEN.value());
         }
-
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -121,7 +121,7 @@ public class UserInformationControllerIntegrationTest {
                     "400 : \"{\"statusCode\":400,\"message\":\"User information Does not Exist\",\"data\":{}}\"",
                     e.getMessage());
         }
-
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -148,6 +148,8 @@ public class UserInformationControllerIntegrationTest {
             Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
             Assertions.assertEquals("JWT token has expired. Please renew the token.", responseMap.getMessage());
         }
+
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -169,6 +171,8 @@ public class UserInformationControllerIntegrationTest {
             Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
             Assertions.assertEquals("Token is not a valid JWT", responseMap.getMessage());
         }
+
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -190,6 +194,8 @@ public class UserInformationControllerIntegrationTest {
             Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
             Assertions.assertEquals("Token Signature is invalid", responseMap.getMessage());
         }
+
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -204,6 +210,8 @@ public class UserInformationControllerIntegrationTest {
         Assertions.assertEquals("User Information is not found, returning empty user information body",
                 response.getBody().getMessage());
         Assertions.assertNotNull(response.getBody().getData("userId"));
+
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
 
     }
 
@@ -235,6 +243,7 @@ public class UserInformationControllerIntegrationTest {
         Assertions.assertEquals("+628543284939", response.getBody().getData("phoneNumber"));
         Assertions.assertEquals(dateFormat.format(curDate), response.getBody().getData("dateOfBirth"));
         Assertions.assertEquals("Indonesia", response.getBody().getData("language"));
+        Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
 
     }
 
@@ -265,6 +274,7 @@ public class UserInformationControllerIntegrationTest {
             Assertions.assertEquals("must not be null", response.getData("fullName"));
 
         }
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -296,6 +306,7 @@ public class UserInformationControllerIntegrationTest {
                     response.getData("phoneNumber"));
 
         }
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -326,6 +337,7 @@ public class UserInformationControllerIntegrationTest {
             Assertions.assertEquals("Gender must be either 'M' or 'F'", response.getData("gender"));
 
         }
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -357,6 +369,7 @@ public class UserInformationControllerIntegrationTest {
             Assertions.assertEquals("Gender must be either 'M' or 'F'", response.getData("gender"));
 
         }
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
     // put test
@@ -383,8 +396,9 @@ public class UserInformationControllerIntegrationTest {
             ApiResponse response = objectMapper.readValue(e.getResponseBodyAsString(), ApiResponse.class);
 
             Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
-            Assertions.assertEquals("User information Does not Exist", response.getMessage());
+            Assertions.assertEquals("User Information Does not Exist", response.getMessage());
         }
+        Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
 
 
     }
@@ -444,7 +458,7 @@ public class UserInformationControllerIntegrationTest {
         Assertions.assertEquals("+61854312121", updatedResponse.getBody().getData("phoneNumber"));
         Assertions.assertEquals(dateFormat.format(curDate), updatedResponse.getBody().getData("dateOfBirth"));
         Assertions.assertEquals("Singapore", updatedResponse.getBody().getData("language"));
-
+        Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
 
     }
 
@@ -476,6 +490,8 @@ public class UserInformationControllerIntegrationTest {
             Assertions.assertEquals("must not be null", response.getData("fullName"));
 
         }
+
+        Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -504,16 +520,17 @@ public class UserInformationControllerIntegrationTest {
             String responseBody = e.getResponseBodyAsString();
             ApiResponse response = objectMapper.readValue(responseBody, ApiResponse.class);
             Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
-            Assertions.assertEquals("Gender must be either 'M' or 'F'",
-                    response.getData("gender"));
+            Assertions.assertEquals("Gender must be either 'M' or 'F'", response.getData("gender"));
 
         }
+        Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
 
     }
 
 
     @Test
     void putUserInvalidPhoneNumber() throws JsonProcessingException {
+        postDefaultUser();
         headers.setBearerAuth(token);
         UserInformationRequest payload = new UserInformationRequest();
         payload.setFullName("Udin Tester");
@@ -530,7 +547,7 @@ public class UserInformationControllerIntegrationTest {
         HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
 
         try {
-            restTemplate.exchange(url, HttpMethod.POST, entity, ApiResponse.class);
+            restTemplate.exchange(url, HttpMethod.PUT, entity, ApiResponse.class);
 
 
         } catch (HttpClientErrorException e) {
@@ -541,10 +558,13 @@ public class UserInformationControllerIntegrationTest {
                     response.getData("phoneNumber"));
 
         }
+        Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
     void putUserInvalidAll() throws JsonProcessingException {
+
+        postDefaultUser();
         headers.setBearerAuth(token);
         UserInformationRequest payload = new UserInformationRequest();
         Date curDate = new Date(System.currentTimeMillis());
@@ -560,7 +580,7 @@ public class UserInformationControllerIntegrationTest {
         HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
 
         try {
-            restTemplate.exchange(url, HttpMethod.POST, entity, ApiResponse.class);
+            restTemplate.exchange(url, HttpMethod.PUT, entity, ApiResponse.class);
 
 
         } catch (HttpClientErrorException e) {
@@ -573,6 +593,7 @@ public class UserInformationControllerIntegrationTest {
             Assertions.assertEquals("Gender must be either 'M' or 'F'", response.getData("gender"));
 
         }
+        Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
@@ -603,11 +624,10 @@ public class UserInformationControllerIntegrationTest {
         Assertions.assertEquals(null, updatedResponse.getBody().getData("phoneNumber"));
         Assertions.assertEquals(null, updatedResponse.getBody().getData("dateOfBirth"));
         Assertions.assertEquals(null, updatedResponse.getBody().getData("language"));
-
+        Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
     }
 
     // test patch user
-    //todo resttempalte doesnt  support patch, use webflux
     @Test
     void patchUserSuccessfully() {
         postDefaultUser();
@@ -625,14 +645,10 @@ public class UserInformationControllerIntegrationTest {
         payload.setPhoneNumber("+61854312121");
 
         //put the user and get the response
-        webTestClient.patch()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(payload), UserInformationRequest.class)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(ApiResponse.class)
-                .consumeWith(response -> {
+        webTestClient.patch().header(HttpHeaders.AUTHORIZATION,
+                "Bearer " + token).contentType(MediaType.APPLICATION_JSON).body(Mono.just(payload),
+                UserInformationRequest.class).exchange().expectStatus().isOk().expectBody(ApiResponse.class).consumeWith(
+                response -> {
                     ApiResponse updatedResponse = response.getResponseBody();
                     Assertions.assertEquals("User updated successfully", updatedResponse.getMessage());
                     Assertions.assertEquals("Udin Tester updated", updatedResponse.getData("fullName"));
@@ -640,6 +656,7 @@ public class UserInformationControllerIntegrationTest {
                     Assertions.assertEquals("+61854312121", updatedResponse.getData("phoneNumber"));
                     Assertions.assertEquals(dateFormat.format(curDate), updatedResponse.getData("dateOfBirth"));
                     Assertions.assertEquals("Indonesia", updatedResponse.getData("language"));
+                    Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
                 });
 
 
@@ -658,17 +675,14 @@ public class UserInformationControllerIntegrationTest {
         payload.setPhoneNumber("+628543284939");
         ;
 
-        webTestClient.patch()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(payload), UserInformationRequest.class)
-                .exchange()
-                .expectStatus().is4xxClientError()
-                .expectBody(ApiResponse.class)
-                .consumeWith(response -> {
+        webTestClient.patch().header(HttpHeaders.AUTHORIZATION,
+                "Bearer " + token).contentType(MediaType.APPLICATION_JSON).body(Mono.just(payload),
+                UserInformationRequest.class).exchange().expectStatus().is4xxClientError().expectBody(ApiResponse.class).consumeWith(
+                response -> {
                     ApiResponse updatedResponse = response.getResponseBody();
                     Assertions.assertEquals("the request is not valid", updatedResponse.getMessage());
                     Assertions.assertEquals("must not be null", updatedResponse.getData("fullName"));
+                    Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
                 });
 
     }
@@ -689,17 +703,14 @@ public class UserInformationControllerIntegrationTest {
         ;
 
 
-        webTestClient.patch()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(payload), UserInformationRequest.class)
-                .exchange()
-                .expectStatus().is4xxClientError()
-                .expectBody(ApiResponse.class)
-                .consumeWith(response -> {
+        webTestClient.patch().header(HttpHeaders.AUTHORIZATION,
+                "Bearer " + token).contentType(MediaType.APPLICATION_JSON).body(Mono.just(payload),
+                UserInformationRequest.class).exchange().expectStatus().is4xxClientError().expectBody(ApiResponse.class).consumeWith(
+                response -> {
                     ApiResponse updatedResponse = response.getResponseBody();
                     Assertions.assertEquals("the request is not valid", updatedResponse.getMessage());
                     Assertions.assertEquals("Gender must be either 'M' or 'F'", updatedResponse.getData("gender"));
+                    Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
                 });
 
 
@@ -708,6 +719,7 @@ public class UserInformationControllerIntegrationTest {
 
     @Test
     void patchUserInvalidPhoneNumber() throws JsonProcessingException {
+        postDefaultUser();
         headers.setBearerAuth(token);
         UserInformationRequest payload = new UserInformationRequest();
         payload.setFullName("Udin Tester");
@@ -721,23 +733,22 @@ public class UserInformationControllerIntegrationTest {
         ;
 
 
-        webTestClient.patch()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(payload), UserInformationRequest.class)
-                .exchange()
-                .expectStatus().is4xxClientError()
-                .expectBody(ApiResponse.class)
-                .consumeWith(response -> {
+        webTestClient.patch().header(HttpHeaders.AUTHORIZATION,
+                "Bearer " + token).contentType(MediaType.APPLICATION_JSON).body(Mono.just(payload),
+                UserInformationRequest.class).exchange().expectStatus().is4xxClientError().expectBody(ApiResponse.class).consumeWith(
+                response -> {
                     ApiResponse updatedResponse = response.getResponseBody();
                     Assertions.assertEquals("the request is not valid", updatedResponse.getMessage());
-                    Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890", updatedResponse.getData("phoneNumber"));
-                });
+                    Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890",
+                            updatedResponse.getData("phoneNumber"));
 
+                });
+        Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
     }
 
     @Test
     void patchUserInvalidAll() throws JsonProcessingException {
+        postDefaultUser();
         headers.setBearerAuth(token);
         UserInformationRequest payload = new UserInformationRequest();
         Date curDate = new Date(System.currentTimeMillis());
@@ -752,19 +763,17 @@ public class UserInformationControllerIntegrationTest {
 
         HttpEntity<UserInformationRequest> entity = new HttpEntity<UserInformationRequest>(payload, headers);
 
-        webTestClient.patch()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(payload), UserInformationRequest.class)
-                .exchange()
-                .expectStatus().is4xxClientError()
-                .expectBody(ApiResponse.class)
-                .consumeWith(response -> {
+        webTestClient.patch().header(HttpHeaders.AUTHORIZATION,
+                "Bearer " + token).contentType(MediaType.APPLICATION_JSON).body(Mono.just(payload),
+                UserInformationRequest.class).exchange().expectStatus().is4xxClientError().expectBody(ApiResponse.class).consumeWith(
+                response -> {
                     ApiResponse updatedResponse = response.getResponseBody();
                     Assertions.assertEquals("the request is not valid", updatedResponse.getMessage());
                     Assertions.assertEquals("must not be null", updatedResponse.getData("fullName"));
-                    Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890", updatedResponse.getData("phoneNumber"));
+                    Assertions.assertEquals("Phone number must be in international format, e.g., +1234567890",
+                            updatedResponse.getData("phoneNumber"));
                     Assertions.assertEquals("Gender must be either 'M' or 'F'", updatedResponse.getData("gender"));
+                    Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
                 });
 
     }
@@ -781,20 +790,46 @@ public class UserInformationControllerIntegrationTest {
 
 
         // patch the user
-        webTestClient.patch()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(payload), UserInformationRequest.class)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(ApiResponse.class)
-                .consumeWith(response -> {
+        webTestClient.patch().header(HttpHeaders.AUTHORIZATION,
+                "Bearer " + token).contentType(MediaType.APPLICATION_JSON).body(Mono.just(payload),
+                UserInformationRequest.class).exchange().expectStatus().isOk().expectBody(ApiResponse.class).consumeWith(
+                response -> {
                     ApiResponse updatedResponse = response.getResponseBody();
                     Assertions.assertEquals("Udin Tester updated", updatedResponse.getData("fullName"));
                     Assertions.assertEquals("M", updatedResponse.getData("gender"));
                     Assertions.assertEquals("+628543284939", updatedResponse.getData("phoneNumber"));
                     Assertions.assertNotNull(updatedResponse.getData("dateOfBirth"));
                     Assertions.assertEquals("Indonesia", updatedResponse.getData("language"));
+                    Assertions.assertEquals(1, testH2UserInformationRepository.findAll().size());
                 });
+    }
+
+    // delete test mapping
+
+
+    @Test
+    void testDeleteButNoUserInformation() {
+        webTestClient.delete().header(HttpHeaders.AUTHORIZATION,
+                "Bearer " + token).exchange().expectStatus().is4xxClientError().expectBody(ApiResponse.class).consumeWith(response -> {
+            ApiResponse responseBody = response.getResponseBody();
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatus());
+            Assertions.assertEquals("User information Does not Exist", responseBody.getMessage());
+            Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
+        });
+
+    }
+
+    @Test
+    void testDeleteSuccessfully() {
+        postDefaultUser();
+
+        webTestClient.delete().header(HttpHeaders.AUTHORIZATION,
+                "Bearer " + token).exchange().expectStatus().isOk().expectBody(ApiResponse.class).consumeWith(response -> {
+            ApiResponse responseBody = response.getResponseBody();
+            Assertions.assertEquals(HttpStatus.OK.value(), responseBody.getStatusCode());
+            Assertions.assertEquals(0, testH2UserInformationRepository.count());
+        });
+
+
     }
 }
