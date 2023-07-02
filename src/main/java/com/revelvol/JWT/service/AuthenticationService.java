@@ -54,11 +54,15 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
         // perform logic to see if the user already exist
         if (user != null){
-            throw new UserAlreadyExistsException("User  already exist ");
+            throw new UserAlreadyExistsException("User already exist");
         } else {
             user = new User(request.getEmail(), passwordEncoder.encode(request.getPassword()), roles);
 
-            user = userRepository.save(user);
+            try {
+                user = userRepository.save(user);
+            } catch (Exception e) {
+                System.out.println("there is error in saving user ");
+            }
 
             // the connection are added automatically for many to many
             var jwtToken = jwtService.generateToken(user);
