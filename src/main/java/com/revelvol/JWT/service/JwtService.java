@@ -13,7 +13,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
 @Service
@@ -24,12 +24,13 @@ public class JwtService {
 
     public String extractUsername(String jwt) {
         return extractClaims(jwt, Claims::getSubject);
-        //look at that :: getsubject, jadi ini shorthand methjod to overiide apply di claiim resoilver diabawah
+        //look at that :: get subject, jadi ini shorthand methjod to overide apply di claim resolver dibawah
     }
+
 
     // a generate token method with extra claims
     public String generateToken(
-            Map<String, Objects> extraClaims,
+            Map<String, Object> extraClaims,
             UserDetails userDetails // take user detail from spring framework
     ) {
         return Jwts
@@ -106,10 +107,28 @@ public class JwtService {
                 .getBody();
     }
 
-    //get the signin key, it return a key type that the jsot will use
+    //get the signin key
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         //hjmacshakey are the algorithm to implement the jsot
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    // get the additional signed roles
+    public Set<String> extractUserRoles(String token) {
+
+        return extractClaims(token, claims -> {
+            //get the "roles" claims from the JWT
+            return claims.get("roles", Set.class);
+        });
+    }
+
+    // get the additional signed userId
+
+    public Integer extractUserId(String token) {
+        return extractClaims(token, claims -> {
+            // get "userId" claims from the JWT
+            return claims.get("userId", Integer.class);
+        });
     }
 }
