@@ -14,5 +14,20 @@ services:
     ports:
       - "5342:5432"
 
+  app:
+    depends_on:
+      - db
+    build: .
+    restart: on-failure
+    env_file: ./.env
+    ports:
+      - "8001:8080"
+    volumes:
+      - app:/root/.m2
+    stdin_open:  true
+    tty: true
+
+
 volumes:
   db_data:
+  app:
