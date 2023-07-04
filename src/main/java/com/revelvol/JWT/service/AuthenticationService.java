@@ -20,8 +20,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthenticationService {
@@ -64,8 +64,10 @@ public class AuthenticationService {
                 System.out.println("there is error in saving user ");
             }
 
+            Map<String, Object> claims = getClaimsFromUser(user);
+
             // the connection are added automatically for many to many
-            var jwtToken = jwtService.generateToken(user);
+            var jwtToken = jwtService.generateToken(claims,user);
 
             AuthenticationResponse authResponse = new AuthenticationResponse(HttpStatus.OK.value(),
                     "registration success",
@@ -73,6 +75,20 @@ public class AuthenticationService {
             return authResponse;
         }
 
+    }
+
+    private static Map<String, Object> getClaimsFromUser(User user) {
+        // extract the roles from the user
+        Set<Role> userRoles = user.getUserRoles();
+        Set<String> userRolesNameArray = userRoles.stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+
+        // ad the additional claims
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+        claims.put("roles", userRolesNameArray);
+        return claims;
     }
 
     public ApiResponse authenticate(AuthenticationRequest request) {
@@ -84,11 +100,10 @@ public class AuthenticationService {
             throw new InvalidPasswordException("Invalid Password");
         }
 
-        // todo wrap this in passwrod check first
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),
                 request.getPassword()));
-
-        var jwtToken = jwtService.generateToken(user);
+        Map<String, Object> claims = getClaimsFromUser(user);
+        var jwtToken = jwtService.generateToken(claims, user);
 
         AuthenticationResponse authResponse = new AuthenticationResponse(HttpStatus.OK.value(),
                 "authentication success",
