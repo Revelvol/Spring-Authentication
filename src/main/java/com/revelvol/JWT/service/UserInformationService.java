@@ -26,18 +26,6 @@ public class UserInformationService {
         this.userInformationRepository = userInformationRepository;
     }
 
-    private User getUser(String token) {
-        String email = jwtService.extractUsername(token);
-
-        // todo implement id user insertion to the token body
-        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User Does not Exist"));
-    }
-
-    private UserInformation getInformationFromUser(User user) {
-        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElseThrow(() -> new UserNotFoundException(
-                "User information Does not Exist"));
-        return userInformation;
-    }
 
     private static void setResponse(UserInformation userInformation, UserInformationResponse response) {
         response.setUserId(userInformation.getUserId());
@@ -50,10 +38,9 @@ public class UserInformationService {
 
     public ApiResponse getUserInformation(String token) {
 
-        User user = getUser(token);
-
-        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElseThrow(() -> new UserNotFoundException(
-                "User Does Not Exist"));
+        // extract the user information from the token id claims
+        UserInformation userInformation = userInformationRepository.findById(jwtService.extractUserId(token)).orElseThrow(
+                () -> new UserNotFoundException("User Does Not Exist"));
 
         UserInformationResponse response = new UserInformationResponse(HttpStatus.OK.value(),
                 "User Information is found");
@@ -64,14 +51,14 @@ public class UserInformationService {
 
 
     public ApiResponse addUserInformation(UserInformationRequest request, String token) {
-
-        User user = getUser(token);
-        // from the request extract the argument and add the user information
-        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElse(null);
+        Integer userId = jwtService.extractUserId(token);
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("User Does Not Exist"));
+        UserInformation userInformation = userInformationRepository.findById(userId).orElse(null);
 
         if (userInformation != null) {
             return new ApiResponse(HttpStatus.BAD_REQUEST.value(),
-                    "User Information already exist, please us patch or put to manipulate the data ");
+                    "User Information already exist, please use patch or put to manipulate the data ");
         } else {
 
             userInformation = new UserInformation();
@@ -97,10 +84,9 @@ public class UserInformationService {
     }
 
     public ApiResponse updateUserInformation(UserInformationRequest request, String token) {
-        // update > put
-        User user = getUser(token);
-        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElseThrow(() -> new UserNotFoundException(
-                "User Information Does not Exist"));
+        // update = put
+        UserInformation userInformation = userInformationRepository.findById(jwtService.extractUserId(token)).orElseThrow(
+                () -> new UserNotFoundException("User Information Does not Exist"));
 
         userInformation.setGender(request.getGender());
         userInformation.setLanguage(request.getLanguage());
@@ -119,9 +105,8 @@ public class UserInformationService {
     }
 
     public ApiResponse patchUserInformation(UserInformationRequest request, String token) {
-        User user = getUser(token);
-        UserInformation userInformation = userInformationRepository.findById(user.getId()).orElseThrow(() -> new UserNotFoundException(
-                "User information Does not Exist"));
+        UserInformation userInformation = userInformationRepository.findById(jwtService.extractUserId(token)).orElseThrow(
+                () -> new UserNotFoundException("User Information Does not Exist"));
 
         if (request.getGender() != null) {
             userInformation.setGender(request.getGender());
@@ -155,12 +140,12 @@ public class UserInformationService {
 
     public ApiResponse deleteUserInformation(String token) {
 
-        User user = getUser(token);
+        Integer userId = jwtService.extractUserId(token);
 
-        userInformationRepository.findById(user.getId()).orElseThrow(() ->
-                new UserNotFoundException("User information Does not Exist")
-        );
-
+        userInformationRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("User information Does not Exist"));
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("User Does Not Exist"));
 
         //synchronize user which are the parent for the fetch
         user.removeUserInformation();
