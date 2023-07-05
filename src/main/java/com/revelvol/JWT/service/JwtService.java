@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +19,12 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-    // todo move secret key to environment variable
     // use hex as best practice and easier implementation
-    private static final String SECRET_KEY = "743777217A25432A462D4A614E645266556A586E3272357538782F413F442847";
+
+    // use secret key from environment variable
+    //@Value("${jwt.secret.key}")
+    private String SECRET_KEY = "743777217A25432A462D4A614E645266556A586E3272357538782F413F442847";
+
 
     public String extractUsername(String jwt) {
         return extractClaims(jwt, Claims::getSubject);
