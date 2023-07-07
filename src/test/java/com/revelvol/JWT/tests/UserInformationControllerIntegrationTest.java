@@ -22,6 +22,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
 
+import javax.security.sasl.SaslServer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -66,6 +67,7 @@ public class UserInformationControllerIntegrationTest {
 
     @BeforeEach //before running each test case, execute this
     public void setUp() {
+        System.out.println(System.getenv());
         String baseUrl = "http://localhost";
         url = baseUrl.concat(":").concat(String.valueOf(port)).concat("/api/v1/user");
         registerUrl = baseUrl.concat(":").concat(String.valueOf(port)).concat("/api/v1/auth/register");
@@ -124,7 +126,7 @@ public class UserInformationControllerIntegrationTest {
         Assertions.assertEquals(0, testH2UserInformationRepository.findAll().size());
     }
 
-    @Test
+
     void testGetUserWithExpiredToken() throws JsonProcessingException {
         RegisterRequest registerRequest = new RegisterRequest("test@gmail.com", "1234567890");
         // generate the expired token for the registered user

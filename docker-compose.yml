@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   db:
-    image: postgres
+    image: postgres:15
     restart: always
     container_name: jwt-db
     env_file:
@@ -23,19 +23,8 @@ services:
     restart: on-failure
     env_file:
       - .env
-    environment:
-      SPRING_APPLICATION_JSON: ' {
-        "spring.datasource.url": "jdbc:postgresql://db:$POSTGRES_DOCKER_PORT/$POSTGRES_DB",
-        "spring.datasource.username": "$POSTGRES_USER",
-        "spring.datasource.password": "$POSTGRES_PASS",
-        "spring.datasource.driver-class-name": "org.postgresql.Driver",
-        "jwt.secret.key": "$JWT_SECRET_KEY",
-        "spring.jpa.database-platform": "org.hibernate.dialect.PostgreSQLDialect",
-        "spring.jpa.show-sql": true,
-        "spring.jpa.hibernate.ddl-auto": "create"
-        }'
     ports:
-      - ${SPRING_LOCAL_PORT}:${SPRING_DOCKER_PORT}
+      - "8001:8080"
     volumes:
       - app:/root/.m2
     stdin_open: true

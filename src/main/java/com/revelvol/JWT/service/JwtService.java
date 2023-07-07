@@ -22,8 +22,8 @@ public class JwtService {
     // use hex as best practice and easier implementation
 
     // use secret key from environment variable
-    //@Value("${jwt.secret.key}")
-    private String SECRET_KEY = "743777217A25432A462D4A614E645266556A586E3272357538782F413F442847";
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
 
     public String extractUsername(String jwt) {
@@ -37,6 +37,7 @@ public class JwtService {
             Map<String, Object> extraClaims,
             UserDetails userDetails // take user detail from spring framework
     ) {
+        System.out.println(SECRET_KEY);
         return Jwts
                 .builder()
                 .setClaims(extraClaims)

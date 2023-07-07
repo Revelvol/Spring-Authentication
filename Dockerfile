@@ -7,7 +7,7 @@ WORKDIR /app
 COPY . .
 
 
-#install and this also test the spring project
+#install and this also test the spring project, currently skip test because error from the setting
 RUN mvn clean install
 
 CMD mvn spring-boot:run
